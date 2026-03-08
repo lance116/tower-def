@@ -188,26 +188,32 @@ const STAGE_THEME_TIERS = [
   {
     until: 12,
     name: "arcane dusk",
-    sky: 0x8db0ff,
-    fog: 0x8db0ff,
+    sky: 0xa8b9ff,
+    fog: 0xa8b9ff,
     fogNear: 56,
     fogFar: 170,
-    grass: 0x5e9e7b,
-    path: 0xb395e0,
-    stone: 0x6b7bff,
-    rune: 0xcdd6ff,
-    spawn: 0x9a9cff,
-    chestBase: 0x70539a,
-    chestLid: 0xc5a6ff,
-    ambient: 0x7290d5,
-    halo: 0xcbd6ff,
-    hemiSky: 0xd8e0ff,
-    hemiGround: 0x5473b8,
-    hemiIntensity: 1.15,
-    sunColor: 0xbba5ff,
-    sunIntensity: 1.05,
+    grass: 0x6db39c,
+    path: 0xc4abf3,
+    stone: 0x7ea3ff,
+    rune: 0xe3e9ff,
+    spawn: 0xb5a9ff,
+    chestBase: 0x8360b6,
+    chestLid: 0xd3b8ff,
+    ambient: 0x8ea8eb,
+    halo: 0xe9edff,
+    hemiSky: 0xe4e9ff,
+    hemiGround: 0x6687d0,
+    hemiIntensity: 1.22,
+    sunColor: 0xd4c3ff,
+    sunIntensity: 1.1,
     sunPos: [-22, 63, 34],
-    exposure: 1.06
+    exposure: 1.1,
+    platform: 0x5376b5,
+    frame: 0x967ce7,
+    hill: 0x8898dc,
+    foliage: 0x72bc9f,
+    rock: 0xa9a3d3,
+    crystal: 0xb8d8ff
   },
   {
     until: 16,
@@ -255,31 +261,43 @@ const STAGE_THEME_TIERS = [
     sunColor: 0xffa568,
     sunIntensity: 1.28,
     sunPos: [-14, 58, 24],
-    exposure: 1.09
+    exposure: 1.09,
+    platform: 0xb86c48,
+    frame: 0xea9358,
+    hill: 0xe3a875,
+    foliage: 0xb28a54,
+    rock: 0xd89a68,
+    crystal: 0xffbe87
   },
   {
     until: Infinity,
     name: "void citadel",
-    sky: 0x2f3358,
-    fog: 0x2f3358,
-    fogNear: 46,
-    fogFar: 145,
-    grass: 0x4a5a72,
-    path: 0x7b6cab,
-    stone: 0x8b9fff,
-    rune: 0xe8deff,
-    spawn: 0xb8b2ff,
-    chestBase: 0x4e3b77,
-    chestLid: 0xc3a9ff,
-    ambient: 0x58648f,
-    halo: 0xcbc3ff,
-    hemiSky: 0xe4ddff,
-    hemiGround: 0x32426e,
-    hemiIntensity: 1.1,
-    sunColor: 0xa8b6ff,
-    sunIntensity: 0.95,
+    sky: 0x86c3ff,
+    fog: 0x86c3ff,
+    fogNear: 48,
+    fogFar: 152,
+    grass: 0x5b87dc,
+    path: 0x9f8bf2,
+    stone: 0x9ec8ff,
+    rune: 0xf0e8ff,
+    spawn: 0xc0b9ff,
+    chestBase: 0x6b5aa6,
+    chestLid: 0xd5bfff,
+    ambient: 0x7da0ee,
+    halo: 0xe7e0ff,
+    hemiSky: 0xedebff,
+    hemiGround: 0x5476c0,
+    hemiIntensity: 1.2,
+    sunColor: 0xc3d0ff,
+    sunIntensity: 1.08,
     sunPos: [8, 60, 12],
-    exposure: 1.02
+    exposure: 1.13,
+    platform: 0x4d6eb6,
+    frame: 0x8f79e3,
+    hill: 0x7990d5,
+    foliage: 0x78a5ef,
+    rock: 0xb1a4df,
+    crystal: 0xcbe4ff
   }
 ];
 
@@ -1330,7 +1348,11 @@ const floorMarks = [];
 const skillEffects = [];
 
 const toonGradientMap = createToonGradientTexture();
+const grassTileTexture = createTilePatternTexture("grass");
+const pathTileTexture = createTilePatternTexture("path");
+const terrainNoiseTexture = createSoftNoiseTexture();
 const spriteCache = new Map();
+const heroFigureCache = new Map();
 const monsterPortraitCache = new Map();
 
 const pathTileSet = new Set(PATH_TILES.map((tile) => `${tile.x},${tile.y}`));
@@ -1350,6 +1372,12 @@ let boardAmbientMesh;
 let boardHaloMesh;
 let chestBaseMesh;
 let chestLidMesh;
+let boardPlatformMesh;
+let boardFrameMesh;
+let boardBackdropMesh;
+const envDecorMeshes = [];
+let grassOverlayMesh;
+let pathRibbonMesh;
 
 const barricades = [];
 
@@ -1499,6 +1527,10 @@ function applyStageTheme(stage) {
   for (const tile of tileMeshes) {
     if (!tile.material || !tile.material.color) continue;
     tile.material.color.setHex(tile.userData.isPath ? theme.path : theme.grass);
+    if (tile.material.emissive) {
+      tile.material.emissive.setHex(tile.userData.isPath ? theme.path : theme.grass);
+      tile.material.emissiveIntensity = tile.userData.isPath ? 0.09 : 0.06;
+    }
   }
 
   for (const stone of slotMeshes) {
@@ -1513,6 +1545,16 @@ function applyStageTheme(stage) {
   if (chestLidMesh?.material?.color) chestLidMesh.material.color.setHex(theme.chestLid);
   if (boardAmbientMesh?.material?.color) boardAmbientMesh.material.color.setHex(theme.ambient);
   if (boardHaloMesh?.material?.color) boardHaloMesh.material.color.setHex(theme.halo);
+  if (boardPlatformMesh?.material?.color) boardPlatformMesh.material.color.setHex(getThemePropColor(theme, "platform"));
+  if (boardFrameMesh?.material?.color) boardFrameMesh.material.color.setHex(getThemePropColor(theme, "frame"));
+  if (boardBackdropMesh?.material?.color) boardBackdropMesh.material.color.setHex(getThemePropColor(theme, "hill"));
+  if (grassOverlayMesh?.material?.color) grassOverlayMesh.material.color.setHex(theme.halo);
+  if (pathRibbonMesh?.material?.color) pathRibbonMesh.material.color.setHex(theme.path);
+  for (const decor of envDecorMeshes) {
+    if (!decor.material?.color) continue;
+    const role = decor.userData.themeRole || "foliage";
+    decor.material.color.setHex(getThemePropColor(theme, role));
+  }
 }
 
 function createFxMaterial(color, opacity = 0.8) {
@@ -1817,10 +1859,116 @@ function createToonGradientTexture() {
   return tex;
 }
 
+function createTilePatternTexture(kind) {
+  const size = 96;
+  const c = document.createElement("canvas");
+  c.width = size;
+  c.height = size;
+  const ctx = c.getContext("2d");
+
+  if (kind === "path") {
+    const grad = ctx.createLinearGradient(0, 0, size, size);
+    grad.addColorStop(0, "#f7d088");
+    grad.addColorStop(1, "#d9a865");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+    ctx.strokeStyle = "rgba(125, 77, 36, 0.2)";
+    ctx.lineWidth = 3;
+    for (let i = 8; i < size; i += 16) {
+      ctx.beginPath();
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i - 12, size);
+      ctx.stroke();
+    }
+  } else {
+    const grad = ctx.createLinearGradient(0, 0, size, size);
+    grad.addColorStop(0, "#78d56e");
+    grad.addColorStop(1, "#4ea955");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+    for (let i = 0; i < 18; i += 1) {
+      const x = (i * 37) % size;
+      const y = (i * 53) % size;
+      ctx.beginPath();
+      ctx.ellipse(x, y, 8, 4, (i % 3) * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(1, 1);
+  tex.anisotropy = 4;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+function createSoftNoiseTexture() {
+  const size = 512;
+  const c = document.createElement("canvas");
+  c.width = size;
+  c.height = size;
+  const ctx = c.getContext("2d");
+
+  ctx.clearRect(0, 0, size, size);
+  for (let i = 0; i < 1400; i += 1) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const r = 4 + Math.random() * 13;
+    ctx.fillStyle = `rgba(255,255,255,${0.015 + Math.random() * 0.05})`;
+    ctx.beginPath();
+    ctx.ellipse(x, y, r * 1.4, r, Math.random() * Math.PI, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(2.6, 1.8);
+  tex.needsUpdate = true;
+  return tex;
+}
+
+function getThemePropColor(theme, role) {
+  if (role === "platform") return theme.platform || theme.grass;
+  if (role === "frame") return theme.frame || theme.path;
+  if (role === "hill") return theme.hill || theme.fog;
+  if (role === "foliage") return theme.foliage || theme.grass;
+  if (role === "rock") return theme.rock || theme.path;
+  if (role === "crystal") return theme.crystal || theme.rune;
+  if (role === "halo") return theme.halo || 0xffffff;
+  return 0xffffff;
+}
+
 function buildBoard() {
   const boardGroup = new THREE.Group();
 
-  const tileGeo = new THREE.BoxGeometry(TILE * 0.95, 0.8, TILE * 0.95);
+  boardPlatformMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(GRID_W * TILE * 1.06, 4.2, GRID_H * TILE * 1.12),
+    new THREE.MeshToonMaterial({ color: 0x4f8d6e, gradientMap: toonGradientMap })
+  );
+  boardPlatformMesh.position.set(0, -2.35, 0);
+  scene.add(boardPlatformMesh);
+
+  boardFrameMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(GRID_W * TILE * 1.02, 0.68, GRID_H * TILE * 1.05),
+    new THREE.MeshToonMaterial({ color: 0xb48952, gradientMap: toonGradientMap })
+  );
+  boardFrameMesh.position.set(0, -0.9, 0);
+  scene.add(boardFrameMesh);
+
+  boardBackdropMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(GRID_W * TILE * 1.9, GRID_H * TILE * 1.3),
+    new THREE.MeshBasicMaterial({ color: 0x9fc5f2, transparent: true, opacity: 0.22 })
+  );
+  boardBackdropMesh.position.set(0, 5.8, -GRID_H * TILE * 0.78);
+  scene.add(boardBackdropMesh);
+
+  const tileGeo = new THREE.BoxGeometry(TILE * 0.97, 0.86, TILE * 0.97);
 
   for (let y = 0; y < GRID_H; y += 1) {
     for (let x = 0; x < GRID_W; x += 1) {
@@ -1829,10 +1977,14 @@ function buildBoard() {
         tileGeo,
         new THREE.MeshToonMaterial({
           color: isPath ? 0xe6be75 : 0x59bc53,
-          gradientMap: toonGradientMap
+          gradientMap: toonGradientMap,
+          map: isPath ? pathTileTexture : grassTileTexture,
+          emissive: isPath ? 0xe6be75 : 0x59bc53,
+          emissiveIntensity: isPath ? 0.08 : 0.05
         })
       );
-      tile.position.copy(tileToWorld(x, y, -0.4));
+      const lift = isPath ? -0.4 : -0.43 + Math.sin(x * 0.92 + y * 1.17) * 0.04;
+      tile.position.copy(tileToWorld(x, y, lift));
       tile.userData = { tileX: x, tileY: y, isPath };
       boardGroup.add(tile);
       tileMeshes.push(tile);
@@ -1840,6 +1992,33 @@ function buildBoard() {
   }
 
   scene.add(boardGroup);
+
+  grassOverlayMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(GRID_W * TILE * 0.99, GRID_H * TILE * 0.99),
+    new THREE.MeshBasicMaterial({
+      map: terrainNoiseTexture,
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.38,
+      depthWrite: false
+    })
+  );
+  grassOverlayMesh.rotation.x = -Math.PI / 2;
+  grassOverlayMesh.position.y = 0.05;
+  scene.add(grassOverlayMesh);
+
+  const ribbonPoints = pathWorld.map((p) => new THREE.Vector3(p.x, 0.06, p.z));
+  const ribbonCurve = new THREE.CatmullRomCurve3(ribbonPoints, false, "centripetal");
+  pathRibbonMesh = new THREE.Mesh(
+    new THREE.TubeGeometry(ribbonCurve, 220, TILE * 0.45, 12, false),
+    new THREE.MeshToonMaterial({
+      color: 0xe8c07b,
+      gradientMap: toonGradientMap,
+      transparent: true,
+      opacity: 0.9
+    })
+  );
+  scene.add(pathRibbonMesh);
 
   for (let i = 0; i < HERO_SLOTS.length; i += 1) {
     const slot = HERO_SLOTS[i];
@@ -1862,26 +2041,46 @@ function buildBoard() {
     rune.position.set(pos.x, pos.y + 0.23, pos.z);
     scene.add(rune);
     slotRuneMeshes.push(rune);
+
+    const slotHalo = new THREE.Mesh(
+      new THREE.RingGeometry(0.57, 0.72, 20),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3, side: THREE.DoubleSide })
+    );
+    slotHalo.rotation.x = -Math.PI / 2;
+    slotHalo.position.set(pos.x, pos.y + 0.16, pos.z);
+    scene.add(slotHalo);
+    slotHalo.userData.themeRole = "halo";
+    envDecorMeshes.push(slotHalo);
   }
 
   spawnPadMesh = new THREE.Mesh(
-    new THREE.CylinderGeometry(1.15, 1.15, 0.24, 24),
+    new THREE.CylinderGeometry(1.26, 1.26, 0.24, 24),
     new THREE.MeshBasicMaterial({ color: 0x84d6ff, transparent: true, opacity: 0.9 })
   );
   spawnPadMesh.position.copy(tileToWorld(PATH_TILES[0].x, PATH_TILES[0].y, 0.17));
   scene.add(spawnPadMesh);
 
+  const spawnRing = new THREE.Mesh(
+    new THREE.RingGeometry(1.15, 1.45, 40),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.42, side: THREE.DoubleSide })
+  );
+  spawnRing.rotation.x = -Math.PI / 2;
+  spawnRing.position.copy(tileToWorld(PATH_TILES[0].x, PATH_TILES[0].y, 0.2));
+  scene.add(spawnRing);
+  spawnRing.userData.themeRole = "halo";
+  envDecorMeshes.push(spawnRing);
+
   chestMesh = new THREE.Group();
   const chestPos = tileToWorld(PATH_TILES[PATH_TILES.length - 1].x, PATH_TILES[PATH_TILES.length - 1].y, 1.2);
   chestBaseMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(2.15, 1.5, 1.85),
+    new THREE.BoxGeometry(2.45, 1.6, 2.05),
     new THREE.MeshToonMaterial({ color: 0xab6f2d, gradientMap: toonGradientMap })
   );
   chestLidMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(2.2, 0.7, 1.92),
+    new THREE.BoxGeometry(2.5, 0.74, 2.08),
     new THREE.MeshToonMaterial({ color: 0xf8c95c, gradientMap: toonGradientMap })
   );
-  chestLidMesh.position.y = 0.97;
+  chestLidMesh.position.y = 1.02;
   chestMesh.add(chestBaseMesh, chestLidMesh);
   chestMesh.position.copy(chestPos);
   scene.add(chestMesh);
@@ -1901,6 +2100,46 @@ function buildBoard() {
   boardHaloMesh.rotation.x = -Math.PI / 2;
   boardHaloMesh.position.y = -0.84;
   scene.add(boardHaloMesh);
+
+  const decorCount = 12;
+  const boardHalfW = ((GRID_W - 1) * TILE) / 2;
+  const boardHalfH = ((GRID_H - 1) * TILE) / 2;
+  for (let i = 0; i < decorCount; i += 1) {
+    const t = i / (decorCount - 1);
+    const x = THREE.MathUtils.lerp(-boardHalfW - 5.5, boardHalfW + 5.5, t);
+    const zTop = -boardHalfH - 6.5 + Math.sin(i * 1.6) * 1.2;
+    const zBottom = boardHalfH + 6.5 + Math.cos(i * 1.2) * 1.1;
+
+    for (const z of [zTop, zBottom]) {
+      const mound = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.92, 1.34, 0.95, 8),
+        new THREE.MeshToonMaterial({ color: 0x6ea55f, gradientMap: toonGradientMap })
+      );
+      mound.position.set(x, -0.28, z);
+      scene.add(mound);
+      mound.userData.themeRole = "foliage";
+      envDecorMeshes.push(mound);
+
+      const crystal = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.45 + Math.random() * 0.14, 0),
+        new THREE.MeshToonMaterial({ color: 0x9fd7ff, gradientMap: toonGradientMap })
+      );
+      crystal.position.set(x + (Math.random() * 1.2 - 0.6), 0.48, z + (Math.random() * 1.4 - 0.7));
+      crystal.rotation.y = Math.random() * Math.PI;
+      scene.add(crystal);
+      crystal.userData.themeRole = "crystal";
+      envDecorMeshes.push(crystal);
+
+      const rock = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.42 + Math.random() * 0.18, 0),
+        new THREE.MeshToonMaterial({ color: 0xa9a5b4, gradientMap: toonGradientMap })
+      );
+      rock.position.set(x + (Math.random() * 1.8 - 0.9), -0.03, z + (Math.random() * 1.6 - 0.8));
+      scene.add(rock);
+      rock.userData.themeRole = "rock";
+      envDecorMeshes.push(rock);
+    }
+  }
 
   groundPlane = new THREE.Mesh(
     new THREE.PlaneGeometry(GRID_W * TILE * 1.5, GRID_H * TILE * 1.5),
@@ -2021,17 +2260,17 @@ function applyPanelVisibility() {
 }
 
 function updateCameraFraming() {
-  // Keep a close angled view so sprites/board are readable on horizontal screens.
+  // Keep heroes large and readable on laptop-width screens.
   const aspect = window.innerWidth / Math.max(1, window.innerHeight);
   if (aspect < 0.95) {
-    camera.position.set(0, 21, 36);
-    camera.lookAt(0, 0, 3);
+    camera.position.set(0, 17, 30);
+    camera.lookAt(0, 1.6, 2.5);
   } else if (aspect < 1.45) {
-    camera.position.set(0, 18, 32);
-    camera.lookAt(0, 0, 1);
+    camera.position.set(0, 14.5, 25);
+    camera.lookAt(0, 1.6, 1.5);
   } else {
-    camera.position.set(0, 15, 28);
-    camera.lookAt(0, 0, 0);
+    camera.position.set(0, 12.3, 21.8);
+    camera.lookAt(0, 1.5, 0.7);
   }
 }
 
@@ -2233,109 +2472,239 @@ function clearHeroFromSlot(slotIndex) {
   }
 }
 
+function hashString(value) {
+  let h = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    h ^= value.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function drawHeroSilhouettePath(ctx, silhouette, variant) {
+  if (silhouette === "beast") {
+    ctx.moveTo(92, 430);
+    ctx.quadraticCurveTo(80, 374, 112, 322);
+    ctx.quadraticCurveTo(154, 274, 198, 270);
+    ctx.quadraticCurveTo(246, 268, 282, 226);
+    ctx.quadraticCurveTo(316, 192, 332, 146);
+    ctx.quadraticCurveTo(340, 188, 324, 224);
+    ctx.quadraticCurveTo(312, 252, 304, 282);
+    ctx.quadraticCurveTo(350, 300, 328, 338);
+    ctx.quadraticCurveTo(307, 372, 274, 372);
+    ctx.quadraticCurveTo(244, 372, 228, 404);
+    ctx.quadraticCurveTo(210, 445, 172, 456);
+    ctx.quadraticCurveTo(136, 466, 104, 452);
+    ctx.closePath();
+    return;
+  }
+
+  if (silhouette === "dragon") {
+    ctx.moveTo(84, 412);
+    ctx.quadraticCurveTo(122, 322, 178, 300);
+    ctx.quadraticCurveTo(144, 254, 146, 206);
+    ctx.quadraticCurveTo(150, 136, 220, 112);
+    ctx.quadraticCurveTo(198, 166, 216, 226);
+    ctx.quadraticCurveTo(272, 190, 324, 190);
+    ctx.quadraticCurveTo(304, 228, 268, 248);
+    ctx.quadraticCurveTo(314, 290, 334, 340);
+    ctx.quadraticCurveTo(286, 346, 252, 326);
+    ctx.quadraticCurveTo(222, 386, 236, 450);
+    ctx.quadraticCurveTo(176, 448, 150, 414);
+    ctx.quadraticCurveTo(120, 446, 84, 412);
+    ctx.closePath();
+    return;
+  }
+
+  if (silhouette === "mage") {
+    ctx.moveTo(104, 432);
+    ctx.quadraticCurveTo(118, 340, 144, 272);
+    ctx.quadraticCurveTo(100, 250, 102, 210);
+    ctx.quadraticCurveTo(106, 160, 146, 138);
+    ctx.quadraticCurveTo(182, 118, 210, 120);
+    ctx.quadraticCurveTo(242, 120, 270, 140);
+    ctx.quadraticCurveTo(304, 164, 302, 212);
+    ctx.quadraticCurveTo(300, 250, 266, 272);
+    ctx.quadraticCurveTo(286, 338, 302, 432);
+    ctx.quadraticCurveTo(242, 454, 202, 452);
+    ctx.quadraticCurveTo(160, 452, 104, 432);
+    ctx.closePath();
+    ctx.moveTo(140, 180);
+    ctx.lineTo(202, 76);
+    ctx.lineTo(266, 180);
+    ctx.closePath();
+    return;
+  }
+
+  if (silhouette === "cat") {
+    ctx.moveTo(96, 430);
+    ctx.quadraticCurveTo(104, 350, 138, 310);
+    ctx.quadraticCurveTo(174, 268, 202, 262);
+    ctx.quadraticCurveTo(230, 268, 266, 310);
+    ctx.quadraticCurveTo(300, 350, 308, 430);
+    ctx.quadraticCurveTo(256, 458, 202, 460);
+    ctx.quadraticCurveTo(148, 458, 96, 430);
+    ctx.closePath();
+    ctx.moveTo(136, 286);
+    ctx.lineTo(154, 210);
+    ctx.lineTo(186, 272);
+    ctx.closePath();
+    ctx.moveTo(268, 286);
+    ctx.lineTo(250, 210);
+    ctx.lineTo(218, 272);
+    ctx.closePath();
+    if (variant % 2 === 0) {
+      ctx.moveTo(286, 386);
+      ctx.quadraticCurveTo(334, 366, 336, 324);
+      ctx.quadraticCurveTo(324, 350, 286, 360);
+      ctx.closePath();
+    }
+    return;
+  }
+
+  ctx.moveTo(102, 420);
+  ctx.quadraticCurveTo(104, 332, 146, 290);
+  ctx.quadraticCurveTo(170, 264, 202, 256);
+  ctx.quadraticCurveTo(236, 262, 264, 290);
+  ctx.quadraticCurveTo(304, 334, 302, 420);
+  ctx.quadraticCurveTo(260, 456, 202, 462);
+  ctx.quadraticCurveTo(144, 456, 102, 420);
+  ctx.closePath();
+}
+
+function createHeroFigureTexture(monsterId) {
+  if (heroFigureCache.has(monsterId)) return heroFigureCache.get(monsterId);
+
+  const monster = monsterCatalog[monsterId];
+  const visual = getMonsterVisual(monsterId);
+  const rarity = rarityCatalog[monster.rarity];
+  const variant = hashString(monsterId) % 5;
+  const canvas2d = document.createElement("canvas");
+  canvas2d.width = 384;
+  canvas2d.height = 512;
+  const ctx = canvas2d.getContext("2d");
+
+  const c1 = new THREE.Color(monster.color);
+  const c2 = new THREE.Color(monster.accent);
+  const aura = new THREE.Color(rarity?.color || 0xffffff);
+
+  const glow = ctx.createRadialGradient(192, 264, 28, 192, 264, 180);
+  glow.addColorStop(0, `rgba(${Math.round(c2.r * 255)}, ${Math.round(c2.g * 255)}, ${Math.round(c2.b * 255)}, 0.95)`);
+  glow.addColorStop(0.45, `rgba(${Math.round(c1.r * 255)}, ${Math.round(c1.g * 255)}, ${Math.round(c1.b * 255)}, 0.48)`);
+  glow.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, 384, 512);
+
+  ctx.strokeStyle = `rgba(${Math.round(aura.r * 255)}, ${Math.round(aura.g * 255)}, ${Math.round(aura.b * 255)}, 0.85)`;
+  ctx.lineWidth = monster.rarity === "special" ? 14 : 10;
+  ctx.beginPath();
+  ctx.arc(192, 264, monster.rarity === "special" ? 124 : 112, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  drawHeroSilhouettePath(ctx, visual.silhouette, variant);
+  ctx.fillStyle = "rgba(9, 9, 12, 0.95)";
+  ctx.fill();
+  ctx.lineWidth = 8;
+  ctx.strokeStyle = "rgba(255,255,255,0.88)";
+  ctx.stroke();
+
+  ctx.beginPath();
+  drawHeroSilhouettePath(ctx, visual.silhouette, variant);
+  const bodyGrad = ctx.createLinearGradient(120, 120, 260, 430);
+  bodyGrad.addColorStop(0, `rgba(${Math.round(c2.r * 255)}, ${Math.round(c2.g * 255)}, ${Math.round(c2.b * 255)}, 0.92)`);
+  bodyGrad.addColorStop(1, `rgba(${Math.round(c1.r * 255)}, ${Math.round(c1.g * 255)}, ${Math.round(c1.b * 255)}, 0.92)`);
+  ctx.fillStyle = bodyGrad;
+  ctx.globalCompositeOperation = "source-atop";
+  ctx.fill();
+  ctx.globalCompositeOperation = "source-over";
+
+  ctx.fillStyle = "rgba(255,255,255,0.93)";
+  ctx.beginPath();
+  ctx.arc(173, 302, 8, 0, Math.PI * 2);
+  ctx.arc(211, 302, 8, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(17,17,20,0.95)";
+  ctx.beginPath();
+  ctx.arc(174, 304, 3.5, 0, Math.PI * 2);
+  ctx.arc(212, 304, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(0, 24);
+  drawMonsterSymbol(ctx, visual.symbol, 192);
+  ctx.restore();
+
+  ctx.font = "800 36px Baloo 2";
+  ctx.textAlign = "center";
+  ctx.fillStyle = "rgba(255,255,255,0.94)";
+  ctx.fillText(visual.badge.toUpperCase(), 192, 478);
+
+  const tex = new THREE.CanvasTexture(canvas2d);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  heroFigureCache.set(monsterId, tex);
+  return tex;
+}
+
 function createHeroMesh(monsterId) {
   const monster = monsterCatalog[monsterId];
   const rarityColor = rarityCatalog[monster.rarity].color;
-  const visual = getMonsterVisual(monsterId);
-
   const group = new THREE.Group();
+  const visual = getMonsterVisual(monsterId);
+  const variant = hashString(monsterId) % 4;
+
+  const baseShadow = new THREE.Mesh(
+    new THREE.CircleGeometry(1.28, 30),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22, depthWrite: false })
+  );
+  baseShadow.rotation.x = -Math.PI / 2;
+  baseShadow.position.y = 0.02;
 
   const base = new THREE.Mesh(
-    new THREE.CylinderGeometry(1.1, 1.26, 0.6, 20),
+    new THREE.CylinderGeometry(1.08, 1.28, 0.52, 24),
     new THREE.MeshToonMaterial({ color: 0xf4fbff, gradientMap: toonGradientMap })
   );
+  base.position.y = 0.26;
+
+  const plinth = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.82, 0.98, 0.52, 18),
+    new THREE.MeshToonMaterial({ color: 0xd6edf8, gradientMap: toonGradientMap })
+  );
+  plinth.position.y = 0.72;
+
+  const coreGem = new THREE.Mesh(
+    new THREE.OctahedronGeometry(0.44, 0),
+    new THREE.MeshToonMaterial({ color: monster.color, gradientMap: toonGradientMap })
+  );
+  coreGem.position.y = 1.35;
 
   const ring = new THREE.Mesh(
-    new THREE.TorusGeometry(0.95, 0.11, 10, 26),
+    new THREE.TorusGeometry(1.05, 0.12, 10, 26),
     new THREE.MeshBasicMaterial({ color: rarityColor, transparent: true, opacity: 0.85 })
   );
   ring.rotation.x = Math.PI / 2;
-  ring.position.y = 0.45;
+  ring.position.y = 0.86;
 
-  const bodyMat = new THREE.MeshToonMaterial({ color: monster.color, gradientMap: toonGradientMap });
-  const accentMat = new THREE.MeshToonMaterial({ color: monster.accent, gradientMap: toonGradientMap });
-
-  let body;
-  let eyeY = 1.28;
-  let eyeForward = 0.54;
-
-  if (visual.silhouette === "beast") {
-    body = new THREE.Mesh(new THREE.DodecahedronGeometry(0.72, 0), bodyMat);
-    body.position.y = 1.24;
-    eyeY = 1.24;
-    eyeForward = 0.56;
-
-    const earL = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.42, 8), accentMat);
-    const earR = earL.clone();
-    earL.position.set(-0.32, 1.84, 0.07);
-    earR.position.set(0.32, 1.84, 0.07);
-    earL.rotation.z = -0.35;
-    earR.rotation.z = 0.35;
-    group.add(earL, earR);
-  } else if (visual.silhouette === "mage") {
-    body = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.66, 1.18, 10), bodyMat);
-    body.position.y = 1.28;
-    eyeY = 1.36;
-    eyeForward = 0.46;
-
-    const hat = new THREE.Mesh(new THREE.ConeGeometry(0.39, 0.7, 10), accentMat);
-    hat.position.y = 2.08;
-    const brim = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.06, 8, 18), accentMat);
-    brim.position.y = 1.83;
-    brim.rotation.x = Math.PI / 2;
-    group.add(hat, brim);
-  } else if (visual.silhouette === "dragon") {
-    body = new THREE.Mesh(new THREE.OctahedronGeometry(0.72, 0), bodyMat);
-    body.position.y = 1.3;
-    eyeY = 1.3;
-    eyeForward = 0.59;
-
-    const hornL = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.45, 7), accentMat);
-    const hornR = hornL.clone();
-    hornL.position.set(-0.28, 1.86, -0.03);
-    hornR.position.set(0.28, 1.86, -0.03);
-    hornL.rotation.z = -0.55;
-    hornR.rotation.z = 0.55;
-    group.add(hornL, hornR);
-  } else if (visual.silhouette === "cat") {
-    body = new THREE.Mesh(new THREE.SphereGeometry(0.62, 18, 14), bodyMat);
-    body.position.y = 1.25;
-
-    const earL = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.36, 7), accentMat);
-    const earR = earL.clone();
-    earL.position.set(-0.24, 1.86, 0.04);
-    earR.position.set(0.24, 1.86, 0.04);
-    earL.rotation.z = -0.38;
-    earR.rotation.z = 0.38;
-
-    const tail = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.07, 8, 16, Math.PI * 1.4), accentMat);
-    tail.position.set(0.34, 1.05, -0.2);
-    tail.rotation.y = -0.8;
-    group.add(earL, earR, tail);
-  } else {
-    body = new THREE.Mesh(new THREE.SphereGeometry(0.66, 18, 14), bodyMat);
-    body.position.y = 1.22;
-    body.scale.y = 0.84;
-    eyeY = 1.2;
-    eyeForward = 0.52;
-
-    const tuft = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 10), accentMat);
-    tuft.position.y = 1.9;
-    group.add(tuft);
-  }
-
-  const eyeMat = new THREE.MeshBasicMaterial({ color: 0x1d1b17 });
-  const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), eyeMat);
-  const eyeR = eyeL.clone();
-  eyeL.position.set(-0.16, eyeY, eyeForward);
-  eyeR.position.set(0.16, eyeY, eyeForward);
-
-  const mouth = new THREE.Mesh(
-    new THREE.TorusGeometry(0.11, 0.02, 6, 12, Math.PI),
-    new THREE.MeshBasicMaterial({ color: 0x2f1f17 })
+  const figureSprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: createHeroFigureTexture(monsterId),
+      transparent: true,
+      depthWrite: false,
+      alphaTest: 0.02
+    })
   );
-  mouth.position.set(0, eyeY - 0.14, eyeForward + 0.03);
-  mouth.rotation.z = Math.PI;
+  figureSprite.center.set(0.5, 0.08);
+  figureSprite.position.y = 0.82;
+  const figureScale = {
+    common: 3.95,
+    rare: 4.2,
+    epic: 4.45,
+    legendary: 4.75,
+    special: 5.05
+  }[monster.rarity] || 4;
+  figureSprite.scale.set(figureScale, figureScale * 1.22, 1);
 
   const iconSprite = new THREE.Sprite(
     new THREE.SpriteMaterial({
@@ -2346,15 +2715,22 @@ function createHeroMesh(monsterId) {
       opacity: 0.98
     })
   );
-  iconSprite.position.y = 2.82;
+  iconSprite.position.y = 3.44;
   const rarityIconScale = {
-    common: 2.65,
-    rare: 2.85,
-    epic: 3.15,
-    legendary: 3.38,
-    special: 3.62
-  }[monster.rarity] || 2.7;
+    common: 2.15,
+    rare: 2.25,
+    epic: 2.42,
+    legendary: 2.58,
+    special: 2.72
+  }[monster.rarity] || 2.2;
   iconSprite.scale.set(rarityIconScale, rarityIconScale, 1);
+
+  const sideAccent = new THREE.Mesh(
+    new THREE.TorusGeometry(0.78, 0.07, 8, 16, Math.PI + variant * 0.22),
+    new THREE.MeshBasicMaterial({ color: monster.accent, transparent: true, opacity: 0.78, side: THREE.DoubleSide })
+  );
+  sideAccent.position.y = 1.55;
+  sideAccent.rotation.x = Math.PI / 2;
 
   let rareAura = null;
   let orbitGroup = null;
@@ -2400,24 +2776,24 @@ function createHeroMesh(monsterId) {
 
   if (monster.rarity === "legendary" || monster.rarity === "special") {
     orbitGroup = new THREE.Group();
-    orbitGroup.position.y = 2.2;
+    orbitGroup.position.y = 2.66;
     for (let i = 0; i < 3; i += 1) {
       const orb = new THREE.Mesh(
-        new THREE.SphereGeometry(0.14, 10, 8),
+        new THREE.SphereGeometry(0.16, 10, 8),
         new THREE.MeshBasicMaterial({ color: monster.accent, transparent: true, opacity: 0.92 })
       );
-      const a = (i / 3) * Math.PI * 2;
-      orb.position.set(Math.cos(a) * 0.8, 0, Math.sin(a) * 0.8);
+      const a = (i / 3) * Math.PI * 2 + variant * 0.3;
+      orb.position.set(Math.cos(a) * 1.02, 0, Math.sin(a) * 1.02);
       orbitGroup.add(orb);
     }
   }
 
   if (monster.rarity === "special") {
     orbitGroup2 = new THREE.Group();
-    orbitGroup2.position.y = 1.6;
+    orbitGroup2.position.y = 2.16;
     for (let i = 0; i < 5; i += 1) {
       const shard = new THREE.Mesh(
-        new THREE.ConeGeometry(0.06, 0.34, 6),
+        new THREE.ConeGeometry(0.08, 0.42, 6),
         new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.84 })
       );
       const a = (i / 5) * Math.PI * 2;
@@ -2430,31 +2806,32 @@ function createHeroMesh(monsterId) {
 
   if (monsterId === "slime_king") {
     const crown = new THREE.Mesh(
-      new THREE.ConeGeometry(0.26, 0.46, 7),
+      new THREE.ConeGeometry(0.32, 0.52, 7),
       new THREE.MeshToonMaterial({ color: 0xffdf73, gradientMap: toonGradientMap })
     );
-    crown.position.y = 2.22;
+    crown.position.y = 3.02;
     group.add(crown);
   }
 
   if (monsterId === "felina") {
     const wingL = new THREE.Mesh(
-      new THREE.BoxGeometry(0.12, 0.66, 0.44),
+      new THREE.BoxGeometry(0.1, 0.86, 0.56),
       new THREE.MeshToonMaterial({ color: 0xffcfbe, gradientMap: toonGradientMap })
     );
     const wingR = wingL.clone();
-    wingL.position.set(-0.54, 1.55, -0.05);
-    wingR.position.set(0.54, 1.55, -0.05);
+    wingL.position.set(-0.74, 2.22, -0.05);
+    wingR.position.set(0.74, 2.22, -0.05);
     wingL.rotation.z = 0.42;
     wingR.rotation.z = -0.42;
     group.add(wingL, wingR);
   }
 
   if (monsterId === "kevin") {
-    const headL = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 10), bodyMat);
+    const bodyMat = new THREE.MeshToonMaterial({ color: monster.color, gradientMap: toonGradientMap });
+    const headL = new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 10), bodyMat);
     const headR = headL.clone();
-    headL.position.set(-0.45, 1.45, 0.16);
-    headR.position.set(0.45, 1.45, 0.16);
+    headL.position.set(-0.66, 2.05, 0.16);
+    headR.position.set(0.66, 2.05, 0.16);
     group.add(headL, headR);
   }
 
@@ -2463,12 +2840,12 @@ function createHeroMesh(monsterId) {
       new THREE.CylinderGeometry(0.03, 0.03, 0.7, 6),
       new THREE.MeshToonMaterial({ color: 0x5a3d28, gradientMap: toonGradientMap })
     );
-    mast.position.set(-0.32, 2.05, -0.08);
+    mast.position.set(-0.42, 2.78, -0.08);
     const flag = new THREE.Mesh(
       new THREE.BoxGeometry(0.26, 0.16, 0.02),
       new THREE.MeshToonMaterial({ color: 0xf7f0e1, gradientMap: toonGradientMap })
     );
-    flag.position.set(-0.18, 2.22, -0.08);
+    flag.position.set(-0.28, 2.96, -0.08);
     group.add(mast, flag);
   }
 
@@ -2477,12 +2854,12 @@ function createHeroMesh(monsterId) {
       new THREE.TorusGeometry(0.46, 0.08, 8, 16),
       new THREE.MeshBasicMaterial({ color: 0xff7f5a, transparent: true, opacity: 0.85 })
     );
-    mane.position.y = 1.88;
+    mane.position.y = 2.5;
     mane.rotation.x = Math.PI / 2;
     group.add(mane);
   }
 
-  group.add(base, ring, body, eyeL, eyeR, mouth, iconSprite);
+  group.add(baseShadow, base, plinth, coreGem, ring, sideAccent, figureSprite, iconSprite);
   if (passiveAura) group.add(passiveAura);
   if (passiveAuraInner) group.add(passiveAuraInner);
   if (rareAura) group.add(rareAura);
@@ -2491,7 +2868,8 @@ function createHeroMesh(monsterId) {
   group.userData.visuals = {
     ring,
     iconSprite,
-    body,
+    figureSprite,
+    figureScale,
     iconScale: rarityIconScale,
     rareAura,
     orbitGroup,
@@ -2538,89 +2916,15 @@ function createMonsterSpriteTexture(monsterId) {
   ctx.arc(center, center, 76, 0, Math.PI * 2);
   ctx.stroke();
 
-  ctx.fillStyle = `rgba(${Math.round(c1.r * 255)}, ${Math.round(c1.g * 255)}, ${Math.round(c1.b * 255)}, 0.98)`;
-  ctx.strokeStyle = "rgba(42, 26, 12, 0.94)";
-  ctx.lineWidth = 7;
-
-  if (visual.silhouette === "beast") {
+  const figureTexture = createHeroFigureTexture(monsterId);
+  if (figureTexture?.image) {
+    ctx.save();
     ctx.beginPath();
-    ctx.arc(center, center + 6, 42, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(center - 40, center - 10);
-    ctx.lineTo(center - 18, center - 58);
-    ctx.lineTo(center - 2, center - 16);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(center + 40, center - 10);
-    ctx.lineTo(center + 18, center - 58);
-    ctx.lineTo(center + 2, center - 16);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-  } else if (visual.silhouette === "mage") {
-    ctx.beginPath();
-    ctx.moveTo(center - 34, center + 44);
-    ctx.lineTo(center - 42, center - 4);
-    ctx.lineTo(center, center - 52);
-    ctx.lineTo(center + 42, center - 4);
-    ctx.lineTo(center + 34, center + 44);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.ellipse(center, center - 54, 18, 10, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-  } else if (visual.silhouette === "dragon") {
-    ctx.beginPath();
-    ctx.moveTo(center, center - 58);
-    ctx.lineTo(center + 46, center - 6);
-    ctx.lineTo(center + 26, center + 54);
-    ctx.lineTo(center - 26, center + 54);
-    ctx.lineTo(center - 46, center - 6);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-  } else if (visual.silhouette === "cat") {
-    ctx.beginPath();
-    ctx.arc(center, center + 6, 40, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(center - 30, center - 6);
-    ctx.lineTo(center - 18, center - 54);
-    ctx.lineTo(center - 2, center - 10);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(center + 30, center - 6);
-    ctx.lineTo(center + 18, center - 54);
-    ctx.lineTo(center + 2, center - 10);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-  } else {
-    ctx.beginPath();
-    ctx.ellipse(center, center + 12, 44, 38, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
+    ctx.arc(center, center, 72, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(figureTexture.image, 58, 24, 140, 186);
+    ctx.restore();
   }
-
-  ctx.fillStyle = "rgba(22,16,14,0.9)";
-  ctx.beginPath();
-  ctx.arc(center - 14, center + 8, 5, 0, Math.PI * 2);
-  ctx.arc(center + 14, center + 8, 5, 0, Math.PI * 2);
-  ctx.fill();
 
   drawMonsterSymbol(ctx, visual.symbol, center);
 
@@ -3485,6 +3789,12 @@ function updateHeroes(dt, elapsed) {
       const pulse = 1 + Math.sin(elapsed * 3.2 + hero.animSeed) * 0.08;
       const iconScale = visuals.iconScale || 2.45;
       visuals.iconSprite.scale.set(iconScale * pulse, iconScale * pulse, 1);
+      if (visuals.figureSprite) {
+        const float = 1 + Math.sin(elapsed * 2.2 + hero.animSeed) * 0.04;
+        const baseScale = visuals.figureScale || 4;
+        visuals.figureSprite.scale.set(baseScale * float, baseScale * 1.22 * float, 1);
+        visuals.figureSprite.material.rotation = Math.sin(elapsed * 1.35 + hero.animSeed) * 0.045;
+      }
       if (visuals.rareAura) visuals.rareAura.rotation.z += dt * 1.25;
       if (visuals.orbitGroup) visuals.orbitGroup.rotation.y += dt * 2;
       if (visuals.orbitGroup2) visuals.orbitGroup2.rotation.y -= dt * 2.7;
