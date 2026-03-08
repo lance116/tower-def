@@ -3337,9 +3337,10 @@ function renderRoster() {
     const portrait = getMonsterPortraitUri(id);
 
     cards.push(`
-      <div class="roster-card ${entry.owned ? "" : "locked"} ${selected ? "selected" : ""}" data-monster-id="${id}">
+      <div class="roster-card rarity-${monster.rarity} ${entry.owned ? "" : "locked"} ${selected ? "selected" : ""}" data-monster-id="${id}">
         <div class="roster-topline">
           <div class="roster-level">lv ${entry.level}</div>
+          <div class="roster-rarity-badge">${monster.rarity}</div>
           <div class="roster-stars">stars ${entry.stars}</div>
         </div>
         <div class="roster-head">
@@ -3348,7 +3349,7 @@ function renderRoster() {
           </div>
           <div class="roster-meta">
             <div class="roster-name">${monster.name}</div>
-            <div class="roster-rarity">${monster.rarity}</div>
+            <div class="roster-rarity">${monster.rarity.toUpperCase()}</div>
             <div class="roster-kit"><img class="roster-skill-icon" src="${passiveIcon}" alt="passive icon" />${passiveLabel}</div>
           </div>
         </div>

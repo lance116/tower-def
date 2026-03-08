@@ -461,16 +461,21 @@ button.panel-close {
 }
 
 .roster-card {
+  --rarity-accent: #b88d56;
+  --rarity-soft: rgba(253, 238, 207, 0.92);
+  --rarity-glow: rgba(184, 141, 86, 0.22);
   border: 2px solid #b88d56;
   border-radius: 14px;
-  background: linear-gradient(180deg, #fffdf8, #fdeecf);
+  background: linear-gradient(180deg, #fffdf8, var(--rarity-soft));
   padding: 8px;
   min-height: 240px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: 5px;
-  transition: transform 0.12s ease, border-color 0.12s ease;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+  border-color: var(--rarity-accent);
+  box-shadow: 0 6px 14px var(--rarity-glow);
 }
 
 .roster-card:hover {
@@ -479,7 +484,7 @@ button.panel-close {
 
 .roster-card.selected {
   border-color: #4aa8ff;
-  box-shadow: 0 0 0 2px rgba(74, 168, 255, 0.26) inset;
+  box-shadow: 0 0 0 2px rgba(74, 168, 255, 0.26) inset, 0 8px 18px var(--rarity-glow);
 }
 
 .roster-card.locked {
@@ -533,18 +538,32 @@ button.panel-close {
 
 .roster-rarity,
 .roster-level,
-.roster-stars {
+.roster-stars,
+.roster-rarity-badge {
   font-size: 0.76rem;
   font-weight: 800;
   color: #7b6348;
 }
 
 .roster-level,
-.roster-stars {
+.roster-stars,
+.roster-rarity-badge {
   border: 1px solid rgba(141, 103, 61, 0.5);
   border-radius: 999px;
   padding: 1px 6px;
   background: rgba(255, 250, 235, 0.6);
+}
+
+.roster-rarity {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--rarity-accent);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.roster-rarity-badge {
+  color: #3f2917;
+  text-transform: lowercase;
 }
 
 .roster-kit {
@@ -613,6 +632,36 @@ button.panel-close {
   padding: 9px 10px;
   margin-bottom: 10px;
   flex: 0 0 auto;
+}
+
+.roster-card.rarity-common {
+  --rarity-accent: #9ea8b8;
+  --rarity-soft: rgba(224, 232, 242, 0.9);
+  --rarity-glow: rgba(120, 136, 158, 0.22);
+}
+
+.roster-card.rarity-rare {
+  --rarity-accent: #4eaef7;
+  --rarity-soft: rgba(211, 240, 255, 0.9);
+  --rarity-glow: rgba(78, 174, 247, 0.24);
+}
+
+.roster-card.rarity-epic {
+  --rarity-accent: #8d74ff;
+  --rarity-soft: rgba(232, 223, 255, 0.9);
+  --rarity-glow: rgba(141, 116, 255, 0.25);
+}
+
+.roster-card.rarity-legendary {
+  --rarity-accent: #f3ab3e;
+  --rarity-soft: rgba(255, 238, 206, 0.92);
+  --rarity-glow: rgba(243, 171, 62, 0.26);
+}
+
+.roster-card.rarity-special {
+  --rarity-accent: #ff628f;
+  --rarity-soft: rgba(255, 219, 233, 0.92);
+  --rarity-glow: rgba(255, 98, 143, 0.28);
 }
 
 .roster-detail-title {
