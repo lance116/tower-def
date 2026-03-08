@@ -241,6 +241,15 @@ button:disabled {
   border: 2px solid #8f6f49;
   background: radial-gradient(circle at 30% 30%, #fff6d3, #f5b350);
   flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+}
+
+.roster-icon-text {
+  font: 800 0.68rem/1 "Baloo 2", sans-serif;
+  letter-spacing: 0.05em;
+  color: #3e2814;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
 }
 
 .roster-meta {

@@ -297,6 +297,23 @@ const monsterCatalog = {
   }
 };
 
+const MONSTER_VISUALS = {
+  slimey: { silhouette: "blob", symbol: "drop", badge: "sl" },
+  mocha: { silhouette: "blob", symbol: "orb", badge: "mo" },
+  spikey: { silhouette: "dragon", symbol: "snow", badge: "sp" },
+  teddy: { silhouette: "beast", symbol: "paw", badge: "te" },
+  clyde: { silhouette: "beast", symbol: "axe", badge: "cl" },
+  cappuccino: { silhouette: "mage", symbol: "cup", badge: "ca" },
+  mighty: { silhouette: "mage", symbol: "sword", badge: "mi" },
+  speedy: { silhouette: "mage", symbol: "bolt", badge: "sd" },
+  frostbite: { silhouette: "dragon", symbol: "ice", badge: "fr" },
+  slime_king: { silhouette: "mage", symbol: "crown", badge: "sk" },
+  felina: { silhouette: "cat", symbol: "flame", badge: "fe" },
+  kevin: { silhouette: "dragon", symbol: "fang", badge: "ke" },
+  pirate_cat: { silhouette: "cat", symbol: "skull", badge: "pc" },
+  hellhound: { silhouette: "beast", symbol: "claw", badge: "hh" }
+};
+
 const enemyTypes = {
   grunt: {
     name: "footman",
@@ -507,6 +524,10 @@ renderer.setAnimationLoop(tick);
 
 function tileToWorld(x, y, yOffset = 0) {
   return new THREE.Vector3((x - (GRID_W - 1) / 2) * TILE, yOffset, (y - (GRID_H - 1) / 2) * TILE);
+}
+
+function getMonsterVisual(monsterId) {
+  return MONSTER_VISUALS[monsterId] || { silhouette: "blob", symbol: "orb", badge: monsterId.slice(0, 2) };
 }
 
 function createToonGradientTexture() {
@@ -861,6 +882,7 @@ function clearHeroFromSlot(slotIndex) {
 function createHeroMesh(monsterId) {
   const monster = monsterCatalog[monsterId];
   const rarityColor = rarityCatalog[monster.rarity].color;
+  const visual = getMonsterVisual(monsterId);
 
   const group = new THREE.Group();
 
@@ -876,23 +898,90 @@ function createHeroMesh(monsterId) {
   ring.rotation.x = Math.PI / 2;
   ring.position.y = 0.45;
 
-  const body = new THREE.Mesh(
-    new THREE.SphereGeometry(0.62, 18, 14),
-    new THREE.MeshToonMaterial({ color: monster.color, gradientMap: toonGradientMap })
-  );
-  body.position.y = 1.25;
+  const bodyMat = new THREE.MeshToonMaterial({ color: monster.color, gradientMap: toonGradientMap });
+  const accentMat = new THREE.MeshToonMaterial({ color: monster.accent, gradientMap: toonGradientMap });
 
-  const crest = new THREE.Mesh(
-    new THREE.ConeGeometry(0.32, 0.65, 10),
-    new THREE.MeshToonMaterial({ color: monster.accent, gradientMap: toonGradientMap })
-  );
-  crest.position.y = 2;
+  let body;
+  let eyeY = 1.28;
+  let eyeForward = 0.54;
+
+  if (visual.silhouette === "beast") {
+    body = new THREE.Mesh(new THREE.DodecahedronGeometry(0.72, 0), bodyMat);
+    body.position.y = 1.24;
+    eyeY = 1.24;
+    eyeForward = 0.56;
+
+    const earL = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.42, 8), accentMat);
+    const earR = earL.clone();
+    earL.position.set(-0.32, 1.84, 0.07);
+    earR.position.set(0.32, 1.84, 0.07);
+    earL.rotation.z = -0.35;
+    earR.rotation.z = 0.35;
+    group.add(earL, earR);
+  } else if (visual.silhouette === "mage") {
+    body = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.66, 1.18, 10), bodyMat);
+    body.position.y = 1.28;
+    eyeY = 1.36;
+    eyeForward = 0.46;
+
+    const hat = new THREE.Mesh(new THREE.ConeGeometry(0.39, 0.7, 10), accentMat);
+    hat.position.y = 2.08;
+    const brim = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.06, 8, 18), accentMat);
+    brim.position.y = 1.83;
+    brim.rotation.x = Math.PI / 2;
+    group.add(hat, brim);
+  } else if (visual.silhouette === "dragon") {
+    body = new THREE.Mesh(new THREE.OctahedronGeometry(0.72, 0), bodyMat);
+    body.position.y = 1.3;
+    eyeY = 1.3;
+    eyeForward = 0.59;
+
+    const hornL = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.45, 7), accentMat);
+    const hornR = hornL.clone();
+    hornL.position.set(-0.28, 1.86, -0.03);
+    hornR.position.set(0.28, 1.86, -0.03);
+    hornL.rotation.z = -0.55;
+    hornR.rotation.z = 0.55;
+    group.add(hornL, hornR);
+  } else if (visual.silhouette === "cat") {
+    body = new THREE.Mesh(new THREE.SphereGeometry(0.62, 18, 14), bodyMat);
+    body.position.y = 1.25;
+
+    const earL = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.36, 7), accentMat);
+    const earR = earL.clone();
+    earL.position.set(-0.24, 1.86, 0.04);
+    earR.position.set(0.24, 1.86, 0.04);
+    earL.rotation.z = -0.38;
+    earR.rotation.z = 0.38;
+
+    const tail = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.07, 8, 16, Math.PI * 1.4), accentMat);
+    tail.position.set(0.34, 1.05, -0.2);
+    tail.rotation.y = -0.8;
+    group.add(earL, earR, tail);
+  } else {
+    body = new THREE.Mesh(new THREE.SphereGeometry(0.66, 18, 14), bodyMat);
+    body.position.y = 1.22;
+    body.scale.y = 0.84;
+    eyeY = 1.2;
+    eyeForward = 0.52;
+
+    const tuft = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 10), accentMat);
+    tuft.position.y = 1.9;
+    group.add(tuft);
+  }
 
   const eyeMat = new THREE.MeshBasicMaterial({ color: 0x1d1b17 });
   const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), eyeMat);
   const eyeR = eyeL.clone();
-  eyeL.position.set(-0.16, 1.3, 0.53);
-  eyeR.position.set(0.16, 1.3, 0.53);
+  eyeL.position.set(-0.16, eyeY, eyeForward);
+  eyeR.position.set(0.16, eyeY, eyeForward);
+
+  const mouth = new THREE.Mesh(
+    new THREE.TorusGeometry(0.11, 0.02, 6, 12, Math.PI),
+    new THREE.MeshBasicMaterial({ color: 0x2f1f17 })
+  );
+  mouth.position.set(0, eyeY - 0.14, eyeForward + 0.03);
+  mouth.rotation.z = Math.PI;
 
   const iconSprite = new THREE.Sprite(
     new THREE.SpriteMaterial({
@@ -900,14 +989,14 @@ function createHeroMesh(monsterId) {
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      opacity: 0.92
+      opacity: 0.98
     })
   );
-  iconSprite.position.y = 2.62;
-  iconSprite.scale.set(2.45, 2.45, 1);
+  iconSprite.position.y = 2.82;
+  iconSprite.scale.set(2.7, 2.7, 1);
 
-  group.add(base, ring, body, crest, eyeL, eyeR, iconSprite);
-  group.userData.visuals = { ring, iconSprite, body };
+  group.add(base, ring, body, eyeL, eyeR, mouth, iconSprite);
+  group.userData.visuals = { ring, iconSprite, body, iconScale: 2.7 };
   return group;
 }
 
@@ -915,6 +1004,7 @@ function createMonsterSpriteTexture(monsterId) {
   if (spriteCache.has(monsterId)) return spriteCache.get(monsterId);
 
   const monster = monsterCatalog[monsterId];
+  const visual = getMonsterVisual(monsterId);
   const canvas2d = document.createElement("canvas");
   canvas2d.width = 256;
   canvas2d.height = 256;
@@ -931,37 +1021,224 @@ function createMonsterSpriteTexture(monsterId) {
   ctx.fillStyle = halo;
   ctx.fillRect(0, 0, 256, 256);
 
-  ctx.strokeStyle = "rgba(255,255,255,0.88)";
-  ctx.lineWidth = 8;
+  ctx.strokeStyle = "rgba(255,255,255,0.96)";
+  ctx.lineWidth = 9;
   ctx.beginPath();
   ctx.arc(center, center, 76, 0, Math.PI * 2);
   ctx.stroke();
 
   ctx.fillStyle = `rgba(${Math.round(c1.r * 255)}, ${Math.round(c1.g * 255)}, ${Math.round(c1.b * 255)}, 0.98)`;
-  ctx.strokeStyle = "rgba(42, 26, 12, 0.95)";
-  ctx.lineWidth = 8;
-  ctx.beginPath();
-  ctx.moveTo(center - 34, center + 44);
-  ctx.lineTo(center - 42, center - 16);
-  ctx.lineTo(center, center - 58);
-  ctx.lineTo(center + 42, center - 16);
-  ctx.lineTo(center + 34, center + 44);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
+  ctx.strokeStyle = "rgba(42, 26, 12, 0.94)";
+  ctx.lineWidth = 7;
 
-  ctx.strokeStyle = "rgba(255,255,255,0.9)";
-  ctx.lineWidth = 5;
+  if (visual.silhouette === "beast") {
+    ctx.beginPath();
+    ctx.arc(center, center + 6, 42, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(center - 40, center - 10);
+    ctx.lineTo(center - 18, center - 58);
+    ctx.lineTo(center - 2, center - 16);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(center + 40, center - 10);
+    ctx.lineTo(center + 18, center - 58);
+    ctx.lineTo(center + 2, center - 16);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  } else if (visual.silhouette === "mage") {
+    ctx.beginPath();
+    ctx.moveTo(center - 34, center + 44);
+    ctx.lineTo(center - 42, center - 4);
+    ctx.lineTo(center, center - 52);
+    ctx.lineTo(center + 42, center - 4);
+    ctx.lineTo(center + 34, center + 44);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.ellipse(center, center - 54, 18, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  } else if (visual.silhouette === "dragon") {
+    ctx.beginPath();
+    ctx.moveTo(center, center - 58);
+    ctx.lineTo(center + 46, center - 6);
+    ctx.lineTo(center + 26, center + 54);
+    ctx.lineTo(center - 26, center + 54);
+    ctx.lineTo(center - 46, center - 6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  } else if (visual.silhouette === "cat") {
+    ctx.beginPath();
+    ctx.arc(center, center + 6, 40, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(center - 30, center - 6);
+    ctx.lineTo(center - 18, center - 54);
+    ctx.lineTo(center - 2, center - 10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(center + 30, center - 6);
+    ctx.lineTo(center + 18, center - 54);
+    ctx.lineTo(center + 2, center - 10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.ellipse(center, center + 12, 44, 38, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "rgba(22,16,14,0.9)";
   ctx.beginPath();
-  ctx.moveTo(center - 28, center - 8);
-  ctx.lineTo(center - 8, center - 28);
-  ctx.stroke();
+  ctx.arc(center - 14, center + 8, 5, 0, Math.PI * 2);
+  ctx.arc(center + 14, center + 8, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  drawMonsterSymbol(ctx, visual.symbol, center);
 
   const tex = new THREE.CanvasTexture(canvas2d);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.needsUpdate = true;
   spriteCache.set(monsterId, tex);
   return tex;
+}
+
+function drawMonsterSymbol(ctx, symbol, center) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,255,255,0.96)";
+  ctx.fillStyle = "rgba(255,255,255,0.96)";
+  ctx.lineWidth = 6;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  if (symbol === "drop") {
+    ctx.beginPath();
+    ctx.moveTo(center, center - 24);
+    ctx.bezierCurveTo(center + 16, center - 6, center + 14, center + 18, center, center + 24);
+    ctx.bezierCurveTo(center - 14, center + 18, center - 16, center - 6, center, center - 24);
+    ctx.closePath();
+    ctx.stroke();
+  } else if (symbol === "snow") {
+    for (let i = 0; i < 6; i += 1) {
+      const a = (i / 6) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(center + Math.cos(a) * 6, center + Math.sin(a) * 6);
+      ctx.lineTo(center + Math.cos(a) * 26, center + Math.sin(a) * 26);
+      ctx.stroke();
+    }
+  } else if (symbol === "paw") {
+    ctx.beginPath();
+    ctx.arc(center, center + 14, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(center - 14, center - 2, 5, 0, Math.PI * 2);
+    ctx.arc(center - 4, center - 10, 5, 0, Math.PI * 2);
+    ctx.arc(center + 6, center - 10, 5, 0, Math.PI * 2);
+    ctx.arc(center + 16, center - 2, 5, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (symbol === "axe") {
+    ctx.beginPath();
+    ctx.moveTo(center - 6, center + 24);
+    ctx.lineTo(center + 8, center - 22);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(center + 6, center - 14);
+    ctx.lineTo(center + 24, center - 8);
+    ctx.lineTo(center + 12, center + 4);
+    ctx.closePath();
+    ctx.stroke();
+  } else if (symbol === "cup") {
+    ctx.beginPath();
+    ctx.rect(center - 14, center - 4, 28, 18);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(center + 16, center + 4, 6, -Math.PI / 2, Math.PI / 2);
+    ctx.stroke();
+  } else if (symbol === "sword") {
+    ctx.beginPath();
+    ctx.moveTo(center, center - 24);
+    ctx.lineTo(center + 8, center + 8);
+    ctx.lineTo(center, center + 20);
+    ctx.lineTo(center - 8, center + 8);
+    ctx.closePath();
+    ctx.stroke();
+  } else if (symbol === "bolt") {
+    ctx.beginPath();
+    ctx.moveTo(center + 6, center - 24);
+    ctx.lineTo(center - 10, center + 2);
+    ctx.lineTo(center + 2, center + 2);
+    ctx.lineTo(center - 6, center + 24);
+    ctx.stroke();
+  } else if (symbol === "ice") {
+    ctx.beginPath();
+    ctx.moveTo(center, center - 24);
+    ctx.lineTo(center + 18, center);
+    ctx.lineTo(center, center + 24);
+    ctx.lineTo(center - 18, center);
+    ctx.closePath();
+    ctx.stroke();
+  } else if (symbol === "crown") {
+    ctx.beginPath();
+    ctx.moveTo(center - 20, center + 18);
+    ctx.lineTo(center - 14, center - 8);
+    ctx.lineTo(center, center + 4);
+    ctx.lineTo(center + 14, center - 8);
+    ctx.lineTo(center + 20, center + 18);
+    ctx.closePath();
+    ctx.stroke();
+  } else if (symbol === "flame") {
+    ctx.beginPath();
+    ctx.moveTo(center, center - 24);
+    ctx.bezierCurveTo(center + 14, center - 10, center + 14, center + 10, center, center + 22);
+    ctx.bezierCurveTo(center - 10, center + 10, center - 14, center - 2, center, center - 24);
+    ctx.closePath();
+    ctx.stroke();
+  } else if (symbol === "fang") {
+    ctx.beginPath();
+    ctx.moveTo(center - 16, center - 10);
+    ctx.lineTo(center - 2, center + 20);
+    ctx.lineTo(center + 12, center - 10);
+    ctx.stroke();
+  } else if (symbol === "skull") {
+    ctx.beginPath();
+    ctx.arc(center, center + 4, 16, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(center - 12, center + 18);
+    ctx.lineTo(center + 12, center + 18);
+    ctx.stroke();
+  } else if (symbol === "claw") {
+    ctx.beginPath();
+    ctx.moveTo(center - 12, center + 20);
+    ctx.lineTo(center - 4, center - 14);
+    ctx.moveTo(center, center + 20);
+    ctx.lineTo(center + 6, center - 16);
+    ctx.moveTo(center + 12, center + 20);
+    ctx.lineTo(center + 16, center - 12);
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.arc(center, center, 12, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 function seedInitialLineup() {
@@ -1339,7 +1616,8 @@ function updateHeroes(dt, elapsed) {
       hero.mesh.position.y = hero.baseY + bob;
       visuals.ring.rotation.z += dt * 1.7;
       const pulse = 1 + Math.sin(elapsed * 3.2 + hero.animSeed) * 0.08;
-      visuals.iconSprite.scale.set(2.45 * pulse, 2.45 * pulse, 1);
+      const iconScale = visuals.iconScale || 2.45;
+      visuals.iconSprite.scale.set(iconScale * pulse, iconScale * pulse, 1);
     }
 
     if (hero.disabledTimer > 0) {
@@ -1931,6 +2209,7 @@ function renderRoster() {
 
   for (const id of ids) {
     const monster = monsterCatalog[id];
+    const visual = getMonsterVisual(id);
     const entry = collection[id];
     const selected = state.selectedMonsterId === id;
     const placedHero = heroByMonster.get(id);
@@ -1941,7 +2220,9 @@ function renderRoster() {
     cards.push(`
       <div class="roster-card ${entry.owned ? "" : "locked"} ${selected ? "selected" : ""}" data-monster-id="${id}">
         <div class="roster-head">
-          <div class="roster-icon" style="background: radial-gradient(circle at 30% 30%, ${accent}, ${color});"></div>
+          <div class="roster-icon" style="background: radial-gradient(circle at 30% 30%, ${accent}, ${color});">
+            <span class="roster-icon-text">${visual.badge.toUpperCase()}</span>
+          </div>
           <div class="roster-meta">
             <div class="roster-name">${monster.name}</div>
             <div class="roster-rarity">${monster.rarity}</div>
