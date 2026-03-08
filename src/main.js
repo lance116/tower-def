@@ -46,26 +46,33 @@ const FREEZE_COST = 120;
 const SAVE_KEY = "idle_summoner_td_save_v1";
 
 const PATH_TILES = [
-  { x: 0, y: 4 },
-  { x: 1, y: 4 },
-  { x: 2, y: 4 },
-  { x: 3, y: 4 },
-  { x: 3, y: 3 },
+  { x: 6, y: 0 },
+  { x: 6, y: 1 },
+  { x: 5, y: 1 },
+  { x: 4, y: 1 },
+  { x: 3, y: 1 },
   { x: 3, y: 2 },
-  { x: 4, y: 2 },
-  { x: 5, y: 2 },
-  { x: 6, y: 2 },
+  { x: 3, y: 3 },
+  { x: 4, y: 3 },
+  { x: 5, y: 3 },
   { x: 6, y: 3 },
-  { x: 6, y: 4 },
-  { x: 6, y: 5 },
-  { x: 7, y: 5 },
-  { x: 8, y: 5 },
+  { x: 7, y: 3 },
+  { x: 8, y: 3 },
+  { x: 9, y: 3 },
+  { x: 9, y: 4 },
   { x: 9, y: 5 },
-  { x: 10, y: 5 },
-  { x: 10, y: 4 },
-  { x: 10, y: 3 },
-  { x: 11, y: 3 },
-  { x: 12, y: 3 }
+  { x: 8, y: 5 },
+  { x: 7, y: 5 },
+  { x: 6, y: 5 },
+  { x: 5, y: 5 },
+  { x: 4, y: 5 },
+  { x: 3, y: 5 },
+  { x: 3, y: 6 },
+  { x: 3, y: 7 },
+  { x: 4, y: 7 },
+  { x: 5, y: 7 },
+  { x: 6, y: 7 },
+  { x: 6, y: 8 }
 ];
 
 const towerCatalog = {
@@ -142,6 +149,7 @@ const tileMeshes = [];
 const buildTiles = [];
 const pathTileSet = new Set(PATH_TILES.map((tile) => key(tile.x, tile.y)));
 const occupiedTiles = new Map();
+const towerSpriteCache = new Map();
 
 const pathWorld = PATH_TILES.map((tile) => tileToWorld(tile.x, tile.y, 0.84));
 const pathLengths = [];
@@ -400,7 +408,9 @@ function addTower(type, rarity, tileX, tileY, level = 1, spent = SUMMON_COST, si
     level,
     spent,
     cooldown: Math.random() * 0.4,
-    mesh
+    mesh,
+    baseY: worldPos.y,
+    animSeed: Math.random() * Math.PI * 2
   };
 
   tower.mesh.scale.setScalar(1 + (level - 1) * 0.08);
@@ -421,55 +431,202 @@ function addTower(type, rarity, tileX, tileY, level = 1, spent = SUMMON_COST, si
 
 function createTowerMesh(type, rarity) {
   const rarityColor = rarityCatalog[rarity].color;
-  const base = new THREE.Mesh(
-    new THREE.CylinderGeometry(1.1, 1.2, 0.7, 22),
-    new THREE.MeshPhongMaterial({ color: 0x2e3d37, shininess: 20 })
-  );
-  const ring = new THREE.Mesh(
-    new THREE.TorusGeometry(1.02, 0.12, 10, 24),
-    new THREE.MeshBasicMaterial({ color: rarityColor })
-  );
-  ring.rotation.x = Math.PI / 2;
-  ring.position.y = 0.37;
-
   const coreColor = towerCatalog[type].color;
-  const coreMat = new THREE.MeshPhongMaterial({ color: coreColor, shininess: 90 });
-
+  const stoneMat = new THREE.MeshPhongMaterial({ color: 0x2d3a35, shininess: 45 });
+  const coreMat = new THREE.MeshPhongMaterial({
+    color: coreColor,
+    shininess: 110,
+    emissive: coreColor,
+    emissiveIntensity: 0.14
+  });
   const group = new THREE.Group();
 
+  const pedestal = new THREE.Mesh(new THREE.CylinderGeometry(1.22, 1.35, 0.72, 26), stoneMat);
+  const plinth = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.02, 0.55, 22), stoneMat);
+  plinth.position.y = 0.53;
+
+  const rarityRing = new THREE.Mesh(
+    new THREE.TorusGeometry(1.03, 0.11, 12, 40),
+    new THREE.MeshBasicMaterial({ color: rarityColor, transparent: true, opacity: 0.88 })
+  );
+  rarityRing.rotation.x = Math.PI / 2;
+  rarityRing.position.y = 0.5;
+
+  const orbitRing = new THREE.Mesh(
+    new THREE.TorusGeometry(0.66, 0.055, 8, 32),
+    new THREE.MeshBasicMaterial({ color: rarityColor, transparent: true, opacity: 0.7 })
+  );
+  orbitRing.rotation.x = Math.PI / 2;
+  orbitRing.position.y = 2.55;
+
+  const glowCore = new THREE.Mesh(
+    new THREE.SphereGeometry(0.35, 16, 14),
+    new THREE.MeshBasicMaterial({ color: rarityColor, transparent: true, opacity: 0.72 })
+  );
+  glowCore.position.y = 2.86;
+
   if (type === "stone") {
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.75, 2.4, 16), coreMat);
-    body.position.y = 1.45;
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.6, 18, 16), coreMat);
-    head.position.y = 2.8;
-    group.add(body, head);
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.54, 0.72, 2.12, 18), coreMat);
+    body.position.y = 1.74;
+    const pauldronL = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.36, 0.9), coreMat);
+    const pauldronR = pauldronL.clone();
+    pauldronL.position.set(-0.49, 2.24, 0);
+    pauldronR.position.set(0.49, 2.24, 0);
+    const helm = new THREE.Mesh(new THREE.OctahedronGeometry(0.48), coreMat);
+    helm.position.y = 2.86;
+    group.add(body, pauldronL, pauldronR, helm);
   }
 
   if (type === "ember") {
-    const body = new THREE.Mesh(new THREE.ConeGeometry(0.85, 2.5, 18), coreMat);
-    body.position.y = 1.7;
+    const body = new THREE.Mesh(new THREE.ConeGeometry(0.82, 2.34, 20), coreMat);
+    body.position.y = 1.78;
+    const wingL = new THREE.Mesh(
+      new THREE.BoxGeometry(0.2, 1.12, 0.7),
+      new THREE.MeshPhongMaterial({ color: 0xffbe86, emissive: 0xff7e42, emissiveIntensity: 0.18, shininess: 80 })
+    );
+    const wingR = wingL.clone();
+    wingL.position.set(-0.48, 2.08, 0);
+    wingR.position.set(0.48, 2.08, 0);
+    wingL.rotation.z = 0.34;
+    wingR.rotation.z = -0.34;
     const crest = new THREE.Mesh(
-      new THREE.TorusGeometry(0.42, 0.12, 12, 20),
-      new THREE.MeshBasicMaterial({ color: 0xffcf8e })
+      new THREE.TorusGeometry(0.42, 0.1, 12, 24),
+      new THREE.MeshBasicMaterial({ color: 0xffda9c, transparent: true, opacity: 0.86 })
     );
     crest.rotation.x = Math.PI / 2;
-    crest.position.y = 2.9;
-    group.add(body, crest);
+    crest.position.y = 2.97;
+    group.add(body, wingL, wingR, crest);
   }
 
   if (type === "frost") {
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.47, 0.82, 2.5, 8), coreMat);
-    body.position.y = 1.62;
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.84, 2.42, 10), coreMat);
+    body.position.y = 1.72;
+    const shardL = new THREE.Mesh(
+      new THREE.ConeGeometry(0.16, 1.05, 6),
+      new THREE.MeshPhongMaterial({ color: 0xc9efff, emissive: 0x84d8ff, emissiveIntensity: 0.25, shininess: 120 })
+    );
+    const shardR = shardL.clone();
+    shardL.position.set(-0.45, 2.15, 0);
+    shardR.position.set(0.45, 2.15, 0);
+    shardL.rotation.z = -0.42;
+    shardR.rotation.z = 0.42;
     const crystal = new THREE.Mesh(
       new THREE.OctahedronGeometry(0.65),
-      new THREE.MeshPhongMaterial({ color: 0xd5f4ff, shininess: 100 })
+      new THREE.MeshPhongMaterial({ color: 0xd5f4ff, emissive: 0x7cd7ff, emissiveIntensity: 0.22, shininess: 130 })
     );
-    crystal.position.y = 3;
-    group.add(body, crystal);
+    crystal.position.y = 3.03;
+    group.add(body, shardL, shardR, crystal);
   }
 
-  group.add(base, ring);
+  const spriteMap = createTowerSpriteTexture(type, coreColor, rarityColor);
+  const emblem = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: spriteMap,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      opacity: 0.96
+    })
+  );
+  emblem.position.y = 3.25;
+  emblem.scale.set(2.8, 2.8, 1);
+
+  group.add(pedestal, plinth, rarityRing, orbitRing, glowCore, emblem);
+  group.userData.visuals = { orbitRing, emblem, glowCore };
   return group;
+}
+
+function createTowerSpriteTexture(type, coreHex, rarityHex) {
+  const spriteKey = `${type}-${coreHex}-${rarityHex}`;
+  if (towerSpriteCache.has(spriteKey)) return towerSpriteCache.get(spriteKey);
+
+  const colorToRgba = (hex, alpha) => {
+    const c = new THREE.Color(hex);
+    const r = Math.round(c.r * 255);
+    const g = Math.round(c.g * 255);
+    const b = Math.round(c.b * 255);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  const canvasSize = 256;
+  const canvas2d = document.createElement("canvas");
+  canvas2d.width = canvasSize;
+  canvas2d.height = canvasSize;
+  const ctx = canvas2d.getContext("2d");
+
+  const center = canvasSize / 2;
+  const halo = ctx.createRadialGradient(center, center, 16, center, center, center * 0.94);
+  halo.addColorStop(0, colorToRgba(coreHex, 0.95));
+  halo.addColorStop(0.48, colorToRgba(rarityHex, 0.42));
+  halo.addColorStop(1, colorToRgba(rarityHex, 0));
+  ctx.fillStyle = halo;
+  ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+  ctx.strokeStyle = colorToRgba(rarityHex, 0.9);
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.arc(center, center, 90, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.strokeStyle = colorToRgba(0xffffff, 0.6);
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(center, center, 68, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.fillStyle = colorToRgba(coreHex, 0.96);
+  ctx.strokeStyle = colorToRgba(0xffffff, 0.78);
+  ctx.lineWidth = 6;
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+
+  if (type === "stone") {
+    ctx.beginPath();
+    ctx.moveTo(center - 10, center - 62);
+    ctx.lineTo(center + 42, center - 18);
+    ctx.lineTo(center + 26, center + 58);
+    ctx.lineTo(center - 26, center + 58);
+    ctx.lineTo(center - 42, center - 18);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  } else if (type === "ember") {
+    ctx.beginPath();
+    ctx.moveTo(center, center - 68);
+    ctx.bezierCurveTo(center + 48, center - 30, center + 44, center + 22, center + 6, center + 60);
+    ctx.bezierCurveTo(center - 16, center + 38, center - 20, center + 12, center - 6, center - 10);
+    ctx.bezierCurveTo(center - 36, center + 4, center - 52, center - 22, center, center - 68);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    for (let i = 0; i < 6; i += 1) {
+      const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
+      const x1 = center + Math.cos(a) * 56;
+      const y1 = center + Math.sin(a) * 56;
+      const x2 = center + Math.cos(a) * 20;
+      const y2 = center + Math.sin(a) * 20;
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      const pA = a + Math.PI / 6;
+      const pB = a - Math.PI / 6;
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(center + Math.cos(pA) * 42, center + Math.sin(pA) * 42);
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(center + Math.cos(pB) * 42, center + Math.sin(pB) * 42);
+    }
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(center, center, 14, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas2d);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
+  towerSpriteCache.set(spriteKey, texture);
+  return texture;
 }
 
 function computeTowerStats(tower) {
@@ -744,9 +901,24 @@ function updateTowers(dt) {
   }
 }
 
+function updateTowerVisuals(elapsed, dt) {
+  for (const tower of towers) {
+    tower.mesh.position.y = tower.baseY + Math.sin(elapsed * 2.1 + tower.animSeed) * 0.1;
+    const visuals = tower.mesh.userData.visuals;
+    if (!visuals) continue;
+
+    const pulse = 1 + Math.sin(elapsed * 3.3 + tower.animSeed) * 0.08;
+
+    visuals.orbitRing.rotation.z += dt * (1 + tower.level * 0.06);
+    visuals.glowCore.scale.setScalar(pulse);
+    visuals.emblem.scale.set(2.8 * pulse, 2.8 * pulse, 1);
+    visuals.emblem.material.rotation = Math.sin(elapsed * 1.6 + tower.animSeed) * 0.16;
+  }
+}
+
 function fireTower(tower, target, stats) {
   const from = tower.mesh.position.clone();
-  from.y = 2.5;
+  from.y += 2.7;
 
   if (tower.type === "ember") {
     damageArea(target.mesh.position, stats.splash, stats.damage);
@@ -1081,6 +1253,7 @@ function loadGame() {
 function tick() {
   const baseDt = Math.min(clock.getDelta(), 0.05);
   const dt = baseDt * state.gameSpeed;
+  const elapsed = clock.elapsedTime;
 
   if (!state.runOver) {
     state.gold += state.passiveGoldRate * dt;
@@ -1092,6 +1265,7 @@ function tick() {
     updateWaveFlow(dt);
     updateTowers(dt);
     updateEnemies(dt);
+    updateTowerVisuals(elapsed, dt);
     updateProjectiles(dt);
     updatePulses(dt);
 
@@ -1101,6 +1275,7 @@ function tick() {
       saveGame();
     }
   } else {
+    updateTowerVisuals(elapsed, dt);
     updateProjectiles(dt);
     updatePulses(dt);
   }
