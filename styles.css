@@ -139,20 +139,20 @@ body {
 }
 
 #leftPanel {
-  bottom: calc(12px + var(--dock-offset));
+  top: 52%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   width: min(1060px, calc(100vw - 20px));
-  max-height: min(36vh, 320px);
+  max-height: min(56vh, 500px);
   overflow: auto;
 }
 
 #rightPanel {
-  bottom: calc(12px + var(--dock-offset));
+  top: 52%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   width: min(1060px, calc(100vw - 20px));
-  max-height: min(36vh, 320px);
+  max-height: min(56vh, 500px);
   overflow: auto;
 }
 
@@ -515,13 +515,15 @@ button:disabled {
   }
 
   #leftPanel {
+    top: 50%;
     width: calc(100vw - 16px);
-    max-height: min(34vh, 280px);
+    max-height: min(54vh, 430px);
   }
 
   #rightPanel {
+    top: 50%;
     width: calc(100vw - 16px);
-    max-height: min(34vh, 280px);
+    max-height: min(54vh, 430px);
   }
 
   #rosterPanel {
@@ -558,13 +560,15 @@ button:disabled {
   }
 
   #leftPanel {
+    top: 48%;
     width: calc(100vw - 12px);
-    max-height: min(36vh, 250px);
+    max-height: min(50vh, 360px);
   }
 
   #rightPanel {
+    top: 48%;
     width: calc(100vw - 12px);
-    max-height: min(36vh, 250px);
+    max-height: min(50vh, 360px);
   }
 
   #rosterPanel {
