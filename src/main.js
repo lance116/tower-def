@@ -38,8 +38,8 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xafe9ff);
 scene.fog = new THREE.Fog(0xafe9ff, 65, 210);
 
-const camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 500);
-camera.position.set(0, 64, 26);
+const camera = new THREE.PerspectiveCamera(47, window.innerWidth / window.innerHeight, 0.1, 500);
+camera.position.set(0, 78, 10);
 camera.lookAt(0, 0, 0);
 
 scene.add(new THREE.HemisphereLight(0xffffff, 0x8ed66f, 1.35));
@@ -48,7 +48,7 @@ sun.position.set(35, 72, 20);
 scene.add(sun);
 
 const GRID_W = 13;
-const GRID_H = 9;
+const GRID_H = 11;
 const TILE = 4;
 const SAVE_KEY = "idle_summoner_td_save_v3";
 
@@ -60,13 +60,51 @@ const REPAIR_COST = 180;
 const PATH_TILES = [
   { x: 6, y: 0 },
   { x: 6, y: 1 },
-  { x: 6, y: 2 },
+  { x: 7, y: 1 },
+  { x: 8, y: 1 },
+  { x: 9, y: 1 },
+  { x: 10, y: 1 },
+  { x: 11, y: 1 },
+  { x: 12, y: 1 },
+  { x: 12, y: 2 },
+  { x: 12, y: 3 },
+  { x: 11, y: 3 },
+  { x: 10, y: 3 },
+  { x: 9, y: 3 },
+  { x: 8, y: 3 },
+  { x: 7, y: 3 },
   { x: 6, y: 3 },
-  { x: 6, y: 4 },
+  { x: 5, y: 3 },
+  { x: 4, y: 3 },
+  { x: 3, y: 3 },
+  { x: 2, y: 3 },
+  { x: 1, y: 3 },
+  { x: 0, y: 3 },
+  { x: 0, y: 4 },
+  { x: 0, y: 5 },
+  { x: 1, y: 5 },
+  { x: 2, y: 5 },
+  { x: 3, y: 5 },
+  { x: 4, y: 5 },
+  { x: 5, y: 5 },
   { x: 6, y: 5 },
-  { x: 6, y: 6 },
+  { x: 7, y: 5 },
+  { x: 8, y: 5 },
+  { x: 9, y: 5 },
+  { x: 10, y: 5 },
+  { x: 11, y: 5 },
+  { x: 12, y: 5 },
+  { x: 12, y: 6 },
+  { x: 12, y: 7 },
+  { x: 11, y: 7 },
+  { x: 10, y: 7 },
+  { x: 9, y: 7 },
+  { x: 8, y: 7 },
+  { x: 7, y: 7 },
   { x: 6, y: 7 },
-  { x: 6, y: 8 }
+  { x: 6, y: 8 },
+  { x: 6, y: 9 },
+  { x: 6, y: 10 }
 ];
 
 const HERO_SLOTS = [
@@ -504,15 +542,16 @@ function buildBoard() {
 
   for (let y = 0; y < GRID_H; y += 1) {
     for (let x = 0; x < GRID_W; x += 1) {
+      const isPath = pathTileSet.has(`${x},${y}`);
       const tile = new THREE.Mesh(
         tileGeo,
         new THREE.MeshToonMaterial({
-          color: 0xe6be75,
+          color: isPath ? 0xe6be75 : 0x59bc53,
           gradientMap: toonGradientMap
         })
       );
       tile.position.copy(tileToWorld(x, y, -0.4));
-      tile.userData = { tileX: x, tileY: y, isPath: true };
+      tile.userData = { tileX: x, tileY: y, isPath };
       boardGroup.add(tile);
       tileMeshes.push(tile);
     }
@@ -587,9 +626,10 @@ function buildBoard() {
   scene.add(groundPlane);
 
   const sortedStoneSlots = [...STONE_SLOTS].sort((a, b) => (a.row - b.row) || (a.idx - b.idx));
+  const rowProgressBase = [8.5, 22.5, 36.5];
   for (let i = 0; i < sortedStoneSlots.length; i += 1) {
     const stoneSlot = sortedStoneSlots[i];
-    const pathIndex = stoneSlot.row * 2 + 1.05 + stoneSlot.idx * 0.18;
+    const pathIndex = rowProgressBase[stoneSlot.row] + stoneSlot.idx * 0.22;
     const mesh = new THREE.Mesh(
       new THREE.DodecahedronGeometry(0.78, 0),
       new THREE.MeshToonMaterial({ color: 0x4caee8, gradientMap: toonGradientMap })
