@@ -48,12 +48,14 @@ body {
 #uiDock {
   position: absolute;
   top: 10px;
-  left: 10px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 9;
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-  width: min(360px, calc(100vw - 20px));
+  justify-content: center;
+  width: min(520px, calc(100vw - 20px));
 }
 
 .dock-btn {
@@ -80,7 +82,7 @@ body {
 
 #topHud {
   position: absolute;
-  top: 10px;
+  top: 58px;
   left: 50%;
   transform: translateX(-50%);
   display: grid;
@@ -129,25 +131,29 @@ body {
 }
 
 #leftPanel {
-  top: 78px;
-  left: 10px;
-  width: min(320px, calc(100vw - 20px));
-  max-height: calc(100vh - 250px);
+  bottom: 172px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1020px, calc(100vw - 20px));
+  max-height: 30vh;
   overflow: auto;
 }
 
 #rightPanel {
-  top: 78px;
-  right: 10px;
-  width: 300px;
+  top: 130px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(760px, calc(100vw - 20px));
+  max-height: 23vh;
+  overflow: auto;
 }
 
 #rosterPanel {
   left: 50%;
   transform: translateX(-50%);
   bottom: 10px;
-  width: min(1080px, calc(100vw - 20px));
-  min-height: 138px;
+  width: min(1280px, calc(100vw - 20px));
+  min-height: 148px;
 }
 
 h2 {
@@ -358,29 +364,19 @@ button:disabled {
   #topHud {
     grid-template-columns: repeat(3, minmax(100px, 1fr));
   }
-
-  #rightPanel {
-    top: auto;
-    bottom: 160px;
-    right: 10px;
-    width: 260px;
-  }
 }
 
 @media (max-width: 900px) {
-  #leftPanel,
-  #rightPanel {
-    width: calc(50vw - 14px);
-    max-height: 34vh;
-  }
-
-  #rightPanel {
-    right: 10px;
-    left: auto;
-  }
-
   #leftPanel {
-    left: 10px;
+    bottom: 168px;
+    width: calc(100vw - 16px);
+    max-height: 28vh;
+  }
+
+  #rightPanel {
+    top: 124px;
+    width: calc(100vw - 16px);
+    max-height: 20vh;
   }
 
   #rosterPanel {
@@ -395,7 +391,8 @@ button:disabled {
 @media (max-width: 720px) {
   #uiDock {
     top: 8px;
-    left: 6px;
+    left: 50%;
+    transform: translateX(-50%);
     width: calc(100vw - 12px);
   }
 
@@ -405,27 +402,22 @@ button:disabled {
   }
 
   #topHud {
-    top: 8px;
+    top: 52px;
     width: calc(100vw - 12px);
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
   }
 
-  #leftPanel,
-  #rightPanel {
-    top: auto;
-    bottom: 170px;
-    width: calc(50vw - 14px);
-    max-height: 32vh;
-    overflow: auto;
-  }
-
   #leftPanel {
-    left: 8px;
+    bottom: 166px;
+    width: calc(100vw - 12px);
+    max-height: 26vh;
   }
 
   #rightPanel {
-    right: 8px;
+    top: 112px;
+    width: calc(100vw - 12px);
+    max-height: 18vh;
   }
 
   #rosterPanel {

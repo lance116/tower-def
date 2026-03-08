@@ -46,14 +46,14 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xafe9ff);
 scene.fog = new THREE.Fog(0xafe9ff, 65, 210);
 
-const camera = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.1, 500);
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 500);
 
 scene.add(new THREE.HemisphereLight(0xffffff, 0x8ed66f, 1.35));
 const sun = new THREE.DirectionalLight(0xfff4c4, 1.15);
 sun.position.set(35, 72, 20);
 scene.add(sun);
 
-const GRID_W = 13;
+const GRID_W = 17;
 const GRID_H = 11;
 const TILE = 4;
 const SAVE_KEY = "idle_summoner_td_save_v3";
@@ -64,8 +64,6 @@ const FREEZE_COST = 170;
 const REPAIR_COST = 180;
 
 const PATH_TILES = [
-  { x: 0, y: 3 },
-  { x: 1, y: 3 },
   { x: 2, y: 3 },
   { x: 3, y: 3 },
   { x: 4, y: 3 },
@@ -77,7 +75,11 @@ const PATH_TILES = [
   { x: 10, y: 3 },
   { x: 11, y: 3 },
   { x: 12, y: 3 },
-  { x: 12, y: 4 },
+  { x: 13, y: 3 },
+  { x: 14, y: 3 },
+  { x: 14, y: 4 },
+  { x: 14, y: 5 },
+  { x: 13, y: 5 },
   { x: 12, y: 5 },
   { x: 11, y: 5 },
   { x: 10, y: 5 },
@@ -89,11 +91,7 @@ const PATH_TILES = [
   { x: 4, y: 5 },
   { x: 3, y: 5 },
   { x: 2, y: 5 },
-  { x: 1, y: 5 },
-  { x: 0, y: 5 },
-  { x: 0, y: 6 },
-  { x: 0, y: 7 },
-  { x: 1, y: 7 },
+  { x: 2, y: 6 },
   { x: 2, y: 7 },
   { x: 3, y: 7 },
   { x: 4, y: 7 },
@@ -105,19 +103,21 @@ const PATH_TILES = [
   { x: 10, y: 7 },
   { x: 11, y: 7 },
   { x: 12, y: 7 },
-  { x: 12, y: 8 }
+  { x: 13, y: 7 },
+  { x: 14, y: 7 },
+  { x: 14, y: 8 }
 ];
 
 const STONE_SLOTS = [
-  { x: 3, y: 2, row: 0, idx: 0 },
-  { x: 7, y: 2, row: 0, idx: 1 },
-  { x: 11, y: 2, row: 0, idx: 2 },
-  { x: 1, y: 4, row: 1, idx: 0 },
-  { x: 5, y: 4, row: 1, idx: 1 },
-  { x: 9, y: 4, row: 1, idx: 2 },
-  { x: 3, y: 6, row: 2, idx: 0 },
-  { x: 7, y: 6, row: 2, idx: 1 },
-  { x: 11, y: 6, row: 2, idx: 2 }
+  { x: 5, y: 2, row: 0, idx: 0 },
+  { x: 9, y: 2, row: 0, idx: 1 },
+  { x: 13, y: 2, row: 0, idx: 2 },
+  { x: 3, y: 4, row: 1, idx: 0 },
+  { x: 7, y: 4, row: 1, idx: 1 },
+  { x: 11, y: 4, row: 1, idx: 2 },
+  { x: 5, y: 6, row: 2, idx: 0 },
+  { x: 9, y: 6, row: 2, idx: 1 },
+  { x: 13, y: 6, row: 2, idx: 2 }
 ];
 
 const HERO_SLOTS = STONE_SLOTS.map((slot) => ({
@@ -734,16 +734,16 @@ function applyPanelVisibility() {
 }
 
 function updateCameraFraming() {
-  // Keep an angled/isometric view; tuned for a left-to-right lane flow.
+  // Keep a close angled view so sprites/board are readable on horizontal screens.
   const aspect = window.innerWidth / Math.max(1, window.innerHeight);
-  if (aspect < 0.8) {
-    camera.position.set(0, 46, 66);
-    camera.lookAt(0, 0, 2);
-  } else if (aspect < 1.3) {
-    camera.position.set(0, 40, 60);
+  if (aspect < 0.95) {
+    camera.position.set(0, 30, 48);
+    camera.lookAt(0, 0, 3);
+  } else if (aspect < 1.45) {
+    camera.position.set(0, 26, 42);
     camera.lookAt(0, 0, 1);
   } else {
-    camera.position.set(0, 34, 52);
+    camera.position.set(0, 22, 36);
     camera.lookAt(0, 0, 0);
   }
 }
@@ -1984,7 +1984,7 @@ function castFreeze() {
   state.freezeCd = 15;
   state.globalSlowTimer = 4.2;
 
-  spawnPulse(tileToWorld(6, 4, 0.08), 0x8fe7ff, 0.8);
+  spawnPulse(tileToWorld(8, 5, 0.08), 0x8fe7ff, 0.8);
   log("deep freeze cast.");
 }
 
@@ -2007,7 +2007,7 @@ function castRepair() {
   state.gold -= REPAIR_COST;
   state.repairCd = 11;
   state.chestHp = Math.min(state.chestHpMax, state.chestHp + state.chestHpMax * 0.35);
-  spawnPulse(tileToWorld(6, 4, 0.08), 0x7dd6ff, 0.75);
+  spawnPulse(tileToWorld(8, 5, 0.08), 0x7dd6ff, 0.75);
   log("chest repaired.");
 }
 
