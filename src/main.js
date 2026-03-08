@@ -23,18 +23,20 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0c1312);
-scene.fog = new THREE.Fog(0x0c1312, 60, 180);
+scene.background = new THREE.Color(0xb8ecff);
+scene.fog = new THREE.Fog(0xb8ecff, 75, 220);
 
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 500);
-camera.position.set(0, 54, 42);
+camera.position.set(0, 58, 28);
 camera.lookAt(0, 0, 0);
 
-scene.add(new THREE.HemisphereLight(0xc9ffe8, 0x17211f, 0.75));
-const sun = new THREE.DirectionalLight(0xfff4dd, 1.15);
-sun.position.set(35, 55, 14);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x84cf72, 1.25));
+const sun = new THREE.DirectionalLight(0xfff6ce, 1.2);
+sun.position.set(30, 70, 18);
 scene.add(sun);
 
 const GRID_W = 13;
@@ -44,6 +46,7 @@ const SUMMON_COST = 50;
 const FIREBALL_COST = 80;
 const FREEZE_COST = 120;
 const SAVE_KEY = "idle_summoner_td_save_v1";
+const toonGradientMap = createToonGradientTexture();
 
 const PATH_TILES = [
   { x: 6, y: 0 },
@@ -193,14 +196,35 @@ function worldToTile(point) {
   };
 }
 
+function createToonGradientTexture() {
+  const canvas2d = document.createElement("canvas");
+  canvas2d.width = 4;
+  canvas2d.height = 1;
+  const ctx = canvas2d.getContext("2d");
+  ctx.fillStyle = "#fdfdfd";
+  ctx.fillRect(0, 0, 1, 1);
+  ctx.fillStyle = "#dddddd";
+  ctx.fillRect(1, 0, 1, 1);
+  ctx.fillStyle = "#b9b9b9";
+  ctx.fillRect(2, 0, 1, 1);
+  ctx.fillStyle = "#8d8d8d";
+  ctx.fillRect(3, 0, 1, 1);
+
+  const gradientMap = new THREE.CanvasTexture(canvas2d);
+  gradientMap.minFilter = THREE.NearestFilter;
+  gradientMap.magFilter = THREE.NearestFilter;
+  gradientMap.generateMipmaps = false;
+  return gradientMap;
+}
+
 function buildBoard() {
   const boardGroup = new THREE.Group();
 
   const colorByKind = {
-    build: 0x264032,
-    path: 0x6f6357,
-    spawn: 0x355f87,
-    chest: 0x8b6f2d
+    build: 0x57ba54,
+    path: 0xe5b673,
+    spawn: 0x68bdff,
+    chest: 0xf3c45c
   };
 
   const tileGeo = new THREE.BoxGeometry(TILE * 0.95, 0.8, TILE * 0.95);
@@ -215,7 +239,10 @@ function buildBoard() {
 
       const tile = new THREE.Mesh(
         tileGeo,
-        new THREE.MeshPhongMaterial({ color: colorByKind[kind], shininess: kind === "path" ? 8 : 25 })
+        new THREE.MeshToonMaterial({
+          color: colorByKind[kind],
+          gradientMap: toonGradientMap
+        })
       );
       const pos = tileToWorld(x, y, -0.4);
       tile.position.copy(pos);
@@ -234,7 +261,7 @@ function buildBoard() {
   const spawnPos = tileToWorld(PATH_TILES[0].x, PATH_TILES[0].y, 0.2);
   const spawnPad = new THREE.Mesh(
     new THREE.CylinderGeometry(1.35, 1.35, 0.25, 24),
-    new THREE.MeshBasicMaterial({ color: 0x5da2ff, transparent: true, opacity: 0.7 })
+    new THREE.MeshBasicMaterial({ color: 0x7cd0ff, transparent: true, opacity: 0.95 })
   );
   spawnPad.position.copy(spawnPos);
   scene.add(spawnPad);
@@ -243,11 +270,11 @@ function buildBoard() {
   chestMesh = new THREE.Group();
   const chestBase = new THREE.Mesh(
     new THREE.BoxGeometry(2.1, 1.8, 1.9),
-    new THREE.MeshPhongMaterial({ color: 0x7b4723, shininess: 12 })
+    new THREE.MeshToonMaterial({ color: 0xa5672f, gradientMap: toonGradientMap })
   );
   const chestLid = new THREE.Mesh(
     new THREE.BoxGeometry(2.15, 0.7, 1.92),
-    new THREE.MeshPhongMaterial({ color: 0xb8822f, shininess: 35 })
+    new THREE.MeshToonMaterial({ color: 0xffcb5f, gradientMap: toonGradientMap })
   );
   chestLid.position.y = 1.05;
   chestMesh.add(chestBase, chestLid);
@@ -263,11 +290,19 @@ function buildBoard() {
 
   const ambientPattern = new THREE.Mesh(
     new THREE.PlaneGeometry(GRID_W * TILE * 1.45, GRID_H * TILE * 1.45),
-    new THREE.MeshPhongMaterial({ color: 0x14201d, transparent: true, opacity: 0.6 })
+    new THREE.MeshBasicMaterial({ color: 0x9ee273, transparent: true, opacity: 0.6 })
   );
   ambientPattern.rotation.x = -Math.PI / 2;
   ambientPattern.position.y = -0.85;
   scene.add(ambientPattern);
+
+  const skyHalo = new THREE.Mesh(
+    new THREE.CircleGeometry(GRID_W * TILE * 0.92, 60),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.18 })
+  );
+  skyHalo.rotation.x = -Math.PI / 2;
+  skyHalo.position.y = -0.83;
+  scene.add(skyHalo);
 }
 
 function wireUi() {
@@ -432,22 +467,30 @@ function addTower(type, rarity, tileX, tileY, level = 1, spent = SUMMON_COST, si
 function createTowerMesh(type, rarity) {
   const rarityColor = rarityCatalog[rarity].color;
   const coreColor = towerCatalog[type].color;
-  const stoneMat = new THREE.MeshPhongMaterial({ color: 0x2d3a35, shininess: 45 });
-  const coreMat = new THREE.MeshPhongMaterial({
+  const baseMat = new THREE.MeshToonMaterial({ color: 0xd5e8d3, gradientMap: toonGradientMap });
+  const coreMat = new THREE.MeshToonMaterial({
     color: coreColor,
-    shininess: 110,
-    emissive: coreColor,
-    emissiveIntensity: 0.14
+    gradientMap: toonGradientMap
   });
   const group = new THREE.Group();
 
-  const pedestal = new THREE.Mesh(new THREE.CylinderGeometry(1.22, 1.35, 0.72, 26), stoneMat);
-  const plinth = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.02, 0.55, 22), stoneMat);
+  const shadow = new THREE.Mesh(
+    new THREE.CircleGeometry(1.22, 24),
+    new THREE.MeshBasicMaterial({ color: 0x4d8a40, transparent: true, opacity: 0.4 })
+  );
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.y = 0.02;
+
+  const pedestal = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.32, 0.62, 22), baseMat);
+  const plinth = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.88, 1.02, 0.5, 20),
+    new THREE.MeshToonMaterial({ color: 0xf8fbf6, gradientMap: toonGradientMap })
+  );
   plinth.position.y = 0.53;
 
   const rarityRing = new THREE.Mesh(
-    new THREE.TorusGeometry(1.03, 0.11, 12, 40),
-    new THREE.MeshBasicMaterial({ color: rarityColor, transparent: true, opacity: 0.88 })
+    new THREE.TorusGeometry(1, 0.11, 10, 24),
+    new THREE.MeshBasicMaterial({ color: rarityColor, transparent: true, opacity: 0.8 })
   );
   rarityRing.rotation.x = Math.PI / 2;
   rarityRing.position.y = 0.5;
@@ -461,28 +504,28 @@ function createTowerMesh(type, rarity) {
 
   const glowCore = new THREE.Mesh(
     new THREE.SphereGeometry(0.35, 16, 14),
-    new THREE.MeshBasicMaterial({ color: rarityColor, transparent: true, opacity: 0.72 })
+    new THREE.MeshBasicMaterial({ color: rarityColor, transparent: true, opacity: 0.65 })
   );
   glowCore.position.y = 2.86;
 
   if (type === "stone") {
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.54, 0.72, 2.12, 18), coreMat);
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.56, 0.74, 2.1, 14), coreMat);
     body.position.y = 1.74;
-    const pauldronL = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.36, 0.9), coreMat);
+    const pauldronL = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.34, 0.9), coreMat);
     const pauldronR = pauldronL.clone();
     pauldronL.position.set(-0.49, 2.24, 0);
     pauldronR.position.set(0.49, 2.24, 0);
-    const helm = new THREE.Mesh(new THREE.OctahedronGeometry(0.48), coreMat);
+    const helm = new THREE.Mesh(new THREE.SphereGeometry(0.52, 16, 14), coreMat);
     helm.position.y = 2.86;
     group.add(body, pauldronL, pauldronR, helm);
   }
 
   if (type === "ember") {
-    const body = new THREE.Mesh(new THREE.ConeGeometry(0.82, 2.34, 20), coreMat);
+    const body = new THREE.Mesh(new THREE.ConeGeometry(0.82, 2.34, 14), coreMat);
     body.position.y = 1.78;
     const wingL = new THREE.Mesh(
       new THREE.BoxGeometry(0.2, 1.12, 0.7),
-      new THREE.MeshPhongMaterial({ color: 0xffbe86, emissive: 0xff7e42, emissiveIntensity: 0.18, shininess: 80 })
+      new THREE.MeshToonMaterial({ color: 0xffc176, gradientMap: toonGradientMap })
     );
     const wingR = wingL.clone();
     wingL.position.set(-0.48, 2.08, 0);
@@ -503,7 +546,7 @@ function createTowerMesh(type, rarity) {
     body.position.y = 1.72;
     const shardL = new THREE.Mesh(
       new THREE.ConeGeometry(0.16, 1.05, 6),
-      new THREE.MeshPhongMaterial({ color: 0xc9efff, emissive: 0x84d8ff, emissiveIntensity: 0.25, shininess: 120 })
+      new THREE.MeshToonMaterial({ color: 0xc9efff, gradientMap: toonGradientMap })
     );
     const shardR = shardL.clone();
     shardL.position.set(-0.45, 2.15, 0);
@@ -512,7 +555,7 @@ function createTowerMesh(type, rarity) {
     shardR.rotation.z = 0.42;
     const crystal = new THREE.Mesh(
       new THREE.OctahedronGeometry(0.65),
-      new THREE.MeshPhongMaterial({ color: 0xd5f4ff, emissive: 0x7cd7ff, emissiveIntensity: 0.22, shininess: 130 })
+      new THREE.MeshToonMaterial({ color: 0xd5f4ff, gradientMap: toonGradientMap })
     );
     crystal.position.y = 3.03;
     group.add(body, shardL, shardR, crystal);
@@ -529,9 +572,9 @@ function createTowerMesh(type, rarity) {
     })
   );
   emblem.position.y = 3.25;
-  emblem.scale.set(2.8, 2.8, 1);
+  emblem.scale.set(3.15, 3.15, 1);
 
-  group.add(pedestal, plinth, rarityRing, orbitRing, glowCore, emblem);
+  group.add(shadow, pedestal, plinth, rarityRing, orbitRing, glowCore, emblem);
   group.userData.visuals = { orbitRing, emblem, glowCore };
   return group;
 }
@@ -557,36 +600,36 @@ function createTowerSpriteTexture(type, coreHex, rarityHex) {
   const center = canvasSize / 2;
   const halo = ctx.createRadialGradient(center, center, 16, center, center, center * 0.94);
   halo.addColorStop(0, colorToRgba(coreHex, 0.95));
-  halo.addColorStop(0.48, colorToRgba(rarityHex, 0.42));
+  halo.addColorStop(0.48, colorToRgba(rarityHex, 0.5));
   halo.addColorStop(1, colorToRgba(rarityHex, 0));
   ctx.fillStyle = halo;
   ctx.fillRect(0, 0, canvasSize, canvasSize);
 
   ctx.strokeStyle = colorToRgba(rarityHex, 0.9);
-  ctx.lineWidth = 8;
+  ctx.lineWidth = 10;
   ctx.beginPath();
   ctx.arc(center, center, 90, 0, Math.PI * 2);
   ctx.stroke();
 
-  ctx.strokeStyle = colorToRgba(0xffffff, 0.6);
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = colorToRgba(0xffffff, 0.78);
+  ctx.lineWidth = 4;
   ctx.beginPath();
   ctx.arc(center, center, 68, 0, Math.PI * 2);
   ctx.stroke();
 
   ctx.fillStyle = colorToRgba(coreHex, 0.96);
-  ctx.strokeStyle = colorToRgba(0xffffff, 0.78);
-  ctx.lineWidth = 6;
+  ctx.strokeStyle = colorToRgba(0x2f230f, 0.95);
+  ctx.lineWidth = 7;
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
 
   if (type === "stone") {
     ctx.beginPath();
-    ctx.moveTo(center - 10, center - 62);
-    ctx.lineTo(center + 42, center - 18);
+    ctx.moveTo(center - 12, center - 66);
+    ctx.lineTo(center + 44, center - 16);
     ctx.lineTo(center + 26, center + 58);
-    ctx.lineTo(center - 26, center + 58);
-    ctx.lineTo(center - 42, center - 18);
+    ctx.lineTo(center - 28, center + 58);
+    ctx.lineTo(center - 44, center - 16);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
@@ -621,6 +664,13 @@ function createTowerSpriteTexture(type, coreHex, rarityHex) {
     ctx.arc(center, center, 14, 0, Math.PI * 2);
     ctx.fill();
   }
+
+  ctx.strokeStyle = colorToRgba(0xffffff, 0.82);
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(center - 36, center - 46);
+  ctx.lineTo(center - 16, center - 60);
+  ctx.stroke();
 
   const texture = new THREE.CanvasTexture(canvas2d);
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -786,19 +836,25 @@ function spawnEnemy() {
 }
 
 function createEnemyMesh(isBoss) {
-  const size = isBoss ? 1.25 : 0.82;
+  const size = isBoss ? 1.35 : 0.9;
   const body = new THREE.Mesh(
-    new THREE.SphereGeometry(size, 14, 12),
-    new THREE.MeshPhongMaterial({ color: isBoss ? 0x8f2f1e : 0xbf5346, shininess: isBoss ? 18 : 8 })
+    new THREE.SphereGeometry(size, 16, 14),
+    new THREE.MeshToonMaterial({ color: isBoss ? 0xe66a58 : 0xff8876, gradientMap: toonGradientMap })
   );
-  const top = new THREE.Mesh(
-    new THREE.ConeGeometry(size * 0.55, size * 0.95, 9),
-    new THREE.MeshPhongMaterial({ color: isBoss ? 0xd39a45 : 0xe2b06f, shininess: 60 })
+  const cap = new THREE.Mesh(
+    new THREE.ConeGeometry(size * 0.58, size * 0.95, 10),
+    new THREE.MeshToonMaterial({ color: isBoss ? 0xffcc5a : 0xffdf88, gradientMap: toonGradientMap })
   );
-  top.position.y = size * 0.92;
+  cap.position.y = size * 0.92;
+
+  const eyeMat = new THREE.MeshBasicMaterial({ color: 0x201814 });
+  const eyeL = new THREE.Mesh(new THREE.SphereGeometry(size * 0.12, 10, 8), eyeMat);
+  const eyeR = eyeL.clone();
+  eyeL.position.set(-size * 0.24, size * 0.15, size * 0.75);
+  eyeR.position.set(size * 0.24, size * 0.15, size * 0.75);
 
   const group = new THREE.Group();
-  group.add(body, top);
+  group.add(body, cap, eyeL, eyeR);
   return group;
 }
 
