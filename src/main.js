@@ -1,5 +1,6 @@
 import * as THREE from "three";
 
+const appRoot = document.getElementById("app");
 const canvas = document.getElementById("gameCanvas");
 const ui = {
   topHud: document.getElementById("topHud"),
@@ -871,6 +872,7 @@ function applyPanelVisibility() {
   ui.leftPanel.classList.toggle("is-hidden", !panelState.controls);
   ui.rightPanel.classList.toggle("is-hidden", !panelState.hero);
   ui.rosterPanel.classList.toggle("is-hidden", !panelState.inventory);
+  appRoot.classList.toggle("inventory-open", panelState.inventory);
 
   ui.toggleStatsBtn.classList.toggle("is-active", panelState.stats);
   ui.toggleControlsBtn.classList.toggle("is-active", panelState.controls);
@@ -3029,11 +3031,13 @@ function updateSelectedHeroPanel() {
   const extrasText = extraTags.length ? extraTags.join(" | ") : "no extra combat modifiers.";
 
   const nextCost = entry.level >= 30 ? "max" : upgradeCost(monsterId);
-  ui.towerInfo.textContent = `${monster.name} | ${monster.rarity} | stars ${entry.stars} | lv ${entry.level}\n` +
-    `dmg ${stats.damage.toFixed(0)} | atk/s ${(1 / stats.attackDelay).toFixed(2)} | rng ${stats.range.toFixed(1)} | ${positionText}\n` +
-    `ability ${specialLabel} | passive ${passiveLabel}\n` +
-    `${extrasText}\n` +
-    `next upgrade ${nextCost}`;
+  ui.towerInfo.textContent = `${monster.name} • ${monster.rarity}\n` +
+    `lv ${entry.level} • stars ${entry.stars} • ${positionText}\n` +
+    `damage ${stats.damage.toFixed(0)} • atk/s ${(1 / stats.attackDelay).toFixed(2)} • range ${stats.range.toFixed(1)}\n` +
+    `active: ${specialLabel}\n` +
+    `passive: ${passiveLabel}\n` +
+    `extras: ${extrasText}\n` +
+    `next upgrade: ${nextCost}`;
 
   ui.upgradeBtn.disabled = entry.level >= 30 || !entry.owned;
   ui.removeBtn.disabled = !hero;

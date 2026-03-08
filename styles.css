@@ -1,6 +1,7 @@
 :root {
   --bg-sky: #b4ecff;
   --bg-ground: #8dd767;
+  --inventory-dock-h: 312px;
   --panel-bg: rgba(255, 250, 235, 0.95);
   --panel-border: #bf8c4f;
   --panel-shadow: rgba(88, 51, 21, 0.24);
@@ -37,6 +38,11 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  --dock-offset: 0px;
+}
+
+#app.inventory-open {
+  --dock-offset: var(--inventory-dock-h);
 }
 
 #gameCanvas {
@@ -47,24 +53,25 @@ body {
 
 #uiDock {
   position: absolute;
-  top: 10px;
+  top: 12px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9;
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
   justify-content: center;
-  width: min(460px, calc(100vw - 20px));
+  width: min(520px, calc(100vw - 20px));
 }
 
 .dock-btn {
   border: 2px solid #7a5632;
-  border-radius: 12px;
-  padding: 7px 9px;
-  font: 800 0.86rem/1 "Baloo 2", sans-serif;
+  border-radius: 14px;
+  padding: 8px 11px;
+  font: 800 0.9rem/1 "Baloo 2", sans-serif;
   color: #fff8eb;
   background: linear-gradient(180deg, #67bd53, #4fa13e);
+  box-shadow: 0 5px 10px rgba(55, 34, 13, 0.16);
 }
 
 .dock-btn.is-active {
@@ -82,12 +89,12 @@ body {
 
 #topHud {
   position: absolute;
-  top: 52px;
+  top: 62px;
   left: 50%;
   transform: translateX(-50%);
   display: grid;
   grid-template-columns: repeat(6, minmax(92px, 1fr));
-  gap: 6px;
+  gap: 8px;
   width: min(880px, calc(100vw - 18px));
   z-index: 8;
 }
@@ -123,28 +130,29 @@ body {
 .panel {
   position: absolute;
   border: 3px solid var(--panel-border);
-  border-radius: 16px;
-  background: linear-gradient(180deg, rgba(255, 254, 248, 0.94), rgba(255, 250, 235, 0.9));
-  box-shadow: 0 10px 28px var(--panel-shadow);
-  padding: 9px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 254, 248, 0.97), rgba(255, 250, 235, 0.95));
+  box-shadow: 0 12px 30px var(--panel-shadow);
+  backdrop-filter: blur(4px);
+  padding: 10px;
   z-index: 7;
 }
 
 #leftPanel {
-  top: 108px;
+  bottom: calc(12px + var(--dock-offset));
   left: 50%;
   transform: translateX(-50%);
-  width: min(900px, calc(100vw - 20px));
-  max-height: 25vh;
+  width: min(1060px, calc(100vw - 20px));
+  max-height: min(36vh, 320px);
   overflow: auto;
 }
 
 #rightPanel {
-  top: 108px;
+  bottom: calc(12px + var(--dock-offset));
   left: 50%;
   transform: translateX(-50%);
-  width: min(680px, calc(100vw - 20px));
-  max-height: 22vh;
+  width: min(1060px, calc(100vw - 20px));
+  max-height: min(36vh, 320px);
   overflow: auto;
 }
 
@@ -152,15 +160,16 @@ body {
   left: 50%;
   transform: translateX(-50%);
   bottom: 10px;
-  width: min(1240px, calc(100vw - 14px));
-  min-height: 180px;
-  max-height: 270px;
+  width: min(1280px, calc(100vw - 14px));
+  height: var(--inventory-dock-h);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 h2 {
-  margin: 0 0 8px;
-  font: 800 0.96rem/1 "Baloo 2", sans-serif;
+  margin: 0 0 9px;
+  font: 800 1.02rem/1 "Baloo 2", sans-serif;
   color: #744726;
   text-transform: lowercase;
 }
@@ -168,15 +177,15 @@ h2 {
 .btn-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  margin-bottom: 6px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 button {
   border: 2px solid #875d33;
   border-radius: 14px;
-  padding: 7px;
-  font: 800 0.83rem/1 "Baloo 2", sans-serif;
+  padding: 9px 10px;
+  font: 800 0.9rem/1 "Baloo 2", sans-serif;
   color: #fff9ec;
   background: linear-gradient(180deg, var(--green-a), var(--green-b));
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
@@ -222,23 +231,26 @@ button:disabled {
 #eventText,
 #hintText,
 #towerInfo {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   color: #5f4d3d;
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.86rem;
 }
 
 #towerInfo {
-  min-height: 52px;
+  min-height: 90px;
+  white-space: pre-line;
+  line-height: 1.28;
 }
 
 #heroRoster {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(180px, 180px);
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 3px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: calc(100% - 120px);
+  padding: 2px 4px 4px 0;
 }
 
 .roster-card {
@@ -246,7 +258,7 @@ button:disabled {
   border-radius: 14px;
   background: linear-gradient(180deg, #fffdf8, #fdeecf);
   padding: 8px;
-  min-height: 142px;
+  min-height: 150px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -306,7 +318,7 @@ button:disabled {
 }
 
 .roster-name {
-  font: 800 0.82rem/1 "Baloo 2", sans-serif;
+  font: 800 0.9rem/1 "Baloo 2", sans-serif;
   color: #5e3c1f;
   white-space: nowrap;
   overflow: hidden;
@@ -316,7 +328,7 @@ button:disabled {
 .roster-rarity,
 .roster-level,
 .roster-stars {
-  font-size: 0.66rem;
+  font-size: 0.68rem;
   font-weight: 800;
   color: #7b6348;
 }
@@ -343,13 +355,13 @@ button:disabled {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.56);
   color: #6f4621;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 800;
   padding: 2px 5px;
 }
 
 .roster-power {
-  font-size: 0.64rem;
+  font-size: 0.68rem;
   font-weight: 800;
   color: #5a4837;
 }
@@ -360,7 +372,7 @@ button:disabled {
   background: rgba(102, 179, 255, 0.18);
   border: 1px solid rgba(71, 141, 211, 0.45);
   color: #275588;
-  font-size: 0.66rem;
+  font-size: 0.68rem;
   font-weight: 800;
   text-align: center;
   padding: 2px 4px;
@@ -371,19 +383,20 @@ button:disabled {
   border-radius: 12px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 242, 213, 0.95));
   box-shadow: 0 6px 16px rgba(71, 43, 18, 0.14);
-  padding: 8px;
-  margin-bottom: 8px;
+  padding: 9px 10px;
+  margin-bottom: 10px;
+  flex: 0 0 auto;
 }
 
 .roster-detail-title {
-  font: 800 0.92rem/1.1 "Baloo 2", sans-serif;
+  font: 800 0.98rem/1.1 "Baloo 2", sans-serif;
   color: #663d1d;
   margin-bottom: 5px;
   text-transform: lowercase;
 }
 
 .roster-detail-stats {
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 800;
   color: #5e4a37;
   white-space: pre-line;
@@ -428,23 +441,29 @@ button:disabled {
   #topHud {
     grid-template-columns: repeat(3, minmax(100px, 1fr));
   }
+
+  :root {
+    --inventory-dock-h: 290px;
+  }
 }
 
 @media (max-width: 900px) {
+  :root {
+    --inventory-dock-h: 270px;
+  }
+
   #leftPanel {
-    top: 104px;
     width: calc(100vw - 16px);
-    max-height: 24vh;
+    max-height: min(34vh, 280px);
   }
 
   #rightPanel {
-    top: 104px;
     width: calc(100vw - 16px);
-    max-height: 22vh;
+    max-height: min(34vh, 280px);
   }
 
   #rosterPanel {
-    min-height: 168px;
+    width: calc(100vw - 12px);
   }
 
   .btn-grid {
@@ -453,8 +472,12 @@ button:disabled {
 }
 
 @media (max-width: 720px) {
+  :root {
+    --inventory-dock-h: 255px;
+  }
+
   #uiDock {
-    top: 8px;
+    top: 7px;
     left: 50%;
     transform: translateX(-50%);
     width: calc(100vw - 12px);
@@ -466,36 +489,38 @@ button:disabled {
   }
 
   #topHud {
-    top: 52px;
+    top: 54px;
     width: calc(100vw - 12px);
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
   }
 
   #leftPanel {
-    top: 100px;
     width: calc(100vw - 12px);
-    max-height: 23vh;
+    max-height: min(36vh, 250px);
   }
 
   #rightPanel {
-    top: 100px;
     width: calc(100vw - 12px);
-    max-height: 20vh;
+    max-height: min(36vh, 250px);
   }
 
   #rosterPanel {
     bottom: 8px;
     width: calc(100vw - 12px);
     padding: 10px;
-    min-height: 165px;
   }
 
   h2 {
-    font-size: 1.2rem;
+    font-size: 1rem;
   }
 
   button {
-    font-size: 0.9rem;
+    font-size: 0.84rem;
+    padding: 8px;
+  }
+
+  #heroRoster {
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
   }
 }
