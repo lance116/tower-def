@@ -60,43 +60,37 @@ const REPAIR_COST = 180;
 const PATH_TILES = [
   { x: 6, y: 0 },
   { x: 6, y: 1 },
-  { x: 5, y: 1 },
-  { x: 4, y: 1 },
-  { x: 3, y: 1 },
-  { x: 3, y: 2 },
-  { x: 3, y: 3 },
-  { x: 4, y: 3 },
-  { x: 5, y: 3 },
+  { x: 6, y: 2 },
   { x: 6, y: 3 },
-  { x: 7, y: 3 },
-  { x: 8, y: 3 },
-  { x: 9, y: 3 },
-  { x: 9, y: 4 },
-  { x: 9, y: 5 },
-  { x: 8, y: 5 },
-  { x: 7, y: 5 },
+  { x: 6, y: 4 },
   { x: 6, y: 5 },
-  { x: 5, y: 5 },
-  { x: 4, y: 5 },
-  { x: 3, y: 5 },
-  { x: 3, y: 6 },
-  { x: 3, y: 7 },
-  { x: 4, y: 7 },
-  { x: 5, y: 7 },
+  { x: 6, y: 6 },
   { x: 6, y: 7 },
   { x: 6, y: 8 }
 ];
 
 const HERO_SLOTS = [
-  { x: 2, y: 2, row: 0, col: 0 },
-  { x: 6, y: 2, row: 0, col: 1 },
-  { x: 10, y: 2, row: 0, col: 2 },
-  { x: 2, y: 4, row: 1, col: 0 },
-  { x: 6, y: 4, row: 1, col: 1 },
-  { x: 10, y: 4, row: 1, col: 2 },
-  { x: 2, y: 6, row: 2, col: 0 },
-  { x: 6, y: 6, row: 2, col: 1 },
-  { x: 10, y: 6, row: 2, col: 2 }
+  { x: 1, y: 2, row: 0, col: 0 },
+  { x: 5, y: 2, row: 0, col: 1 },
+  { x: 9, y: 2, row: 0, col: 2 },
+  { x: 3, y: 4, row: 1, col: 0 },
+  { x: 7, y: 4, row: 1, col: 1 },
+  { x: 11, y: 4, row: 1, col: 2 },
+  { x: 1, y: 6, row: 2, col: 0 },
+  { x: 5, y: 6, row: 2, col: 1 },
+  { x: 9, y: 6, row: 2, col: 2 }
+];
+
+const STONE_SLOTS = [
+  { x: 3, y: 2, row: 0, idx: 0 },
+  { x: 7, y: 2, row: 0, idx: 1 },
+  { x: 11, y: 2, row: 0, idx: 2 },
+  { x: 1, y: 4, row: 1, idx: 0 },
+  { x: 5, y: 4, row: 1, idx: 1 },
+  { x: 9, y: 4, row: 1, idx: 2 },
+  { x: 3, y: 6, row: 2, idx: 0 },
+  { x: 7, y: 6, row: 2, idx: 1 },
+  { x: 11, y: 6, row: 2, idx: 2 }
 ];
 
 const SLOT_GRID_LOOKUP = new Map(HERO_SLOTS.map((slot, i) => [`${slot.row},${slot.col}`, i]));
@@ -510,16 +504,15 @@ function buildBoard() {
 
   for (let y = 0; y < GRID_H; y += 1) {
     for (let x = 0; x < GRID_W; x += 1) {
-      const isPath = pathTileSet.has(`${x},${y}`);
       const tile = new THREE.Mesh(
         tileGeo,
         new THREE.MeshToonMaterial({
-          color: isPath ? 0xe6be75 : 0x59bc53,
+          color: 0xe6be75,
           gradientMap: toonGradientMap
         })
       );
       tile.position.copy(tileToWorld(x, y, -0.4));
-      tile.userData = { tileX: x, tileY: y, isPath };
+      tile.userData = { tileX: x, tileY: y, isPath: true };
       boardGroup.add(tile);
       tileMeshes.push(tile);
     }
@@ -548,17 +541,6 @@ function buildBoard() {
     scene.add(inner);
   }
 
-  for (const y of [2, 4, 6]) {
-    for (const x of [4, 8]) {
-      const stone = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.72, 0.88, 0.45, 8),
-        new THREE.MeshToonMaterial({ color: 0x4ab0e7, gradientMap: toonGradientMap })
-      );
-      stone.position.copy(tileToWorld(x, y, 0.1));
-      scene.add(stone);
-    }
-  }
-
   const spawnPad = new THREE.Mesh(
     new THREE.CylinderGeometry(1.15, 1.15, 0.24, 24),
     new THREE.MeshBasicMaterial({ color: 0x84d6ff, transparent: true, opacity: 0.9 })
@@ -583,7 +565,7 @@ function buildBoard() {
 
   const ambient = new THREE.Mesh(
     new THREE.PlaneGeometry(GRID_W * TILE * 1.45, GRID_H * TILE * 1.45),
-    new THREE.MeshBasicMaterial({ color: 0x9ee273, transparent: true, opacity: 0.58 })
+    new THREE.MeshBasicMaterial({ color: 0x6dc957, transparent: true, opacity: 0.42 })
   );
   ambient.rotation.x = -Math.PI / 2;
   ambient.position.y = -0.85;
@@ -604,15 +586,15 @@ function buildBoard() {
   groundPlane.rotation.x = -Math.PI / 2;
   scene.add(groundPlane);
 
-  const barricadeProgress = [6, 13, 20];
-  for (let i = 0; i < barricadeProgress.length; i += 1) {
-    const pathIndex = barricadeProgress[i];
+  const sortedStoneSlots = [...STONE_SLOTS].sort((a, b) => (a.row - b.row) || (a.idx - b.idx));
+  for (let i = 0; i < sortedStoneSlots.length; i += 1) {
+    const stoneSlot = sortedStoneSlots[i];
+    const pathIndex = stoneSlot.row * 2 + 1.05 + stoneSlot.idx * 0.18;
     const mesh = new THREE.Mesh(
       new THREE.DodecahedronGeometry(0.78, 0),
       new THREE.MeshToonMaterial({ color: 0x4caee8, gradientMap: toonGradientMap })
     );
-    const pos = pathWorld[pathIndex].clone();
-    pos.y = 1.15;
+    const pos = tileToWorld(stoneSlot.x, stoneSlot.y, 1.02);
     mesh.position.copy(pos);
     scene.add(mesh);
 
@@ -628,6 +610,9 @@ function buildBoard() {
     );
     hpFill.position.set(pos.x, 2.0, pos.z + 0.01);
 
+    // Keep hp internals for mechanics, but hide bars to stay close to SG visual style.
+    hpBg.visible = false;
+    hpFill.visible = false;
     scene.add(hpBg, hpFill);
 
     barricades.push({
