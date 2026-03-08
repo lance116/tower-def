@@ -3159,6 +3159,12 @@ function updateSelectedHeroPanel() {
   const specialPower = getSpecialPowerText(monster, stats);
   const passivePower = getPassivePowerText(monster, stats);
   const positionText = slot ? `stone r${slot.row + 1}c${slot.col + 1}` : "bench";
+  const atkSpeed = (1 / stats.attackDelay).toFixed(2);
+  const statStamina = Math.round(entry.level * 34 + entry.stars * 68 + stats.range * 12);
+  const statAttack = Math.round(stats.damage);
+  const statDefense = Math.round(stats.range * 9 + entry.stars * 14 + (hero ? 10 : 0));
+  const statSpeed = Math.round((1 / stats.attackDelay) * 27);
+  const statCrit = `${Math.round((stats.critChance || 0) * 100)}%`;
   const extraTags = [];
   if (stats.critChance > 0) extraTags.push(`crit ${Math.round(stats.critChance * 100)}% x${stats.critMult.toFixed(2)}`);
   if (stats.burnDps > 0) extraTags.push(`burn ${stats.burnDps.toFixed(0)}/s`);
@@ -3170,25 +3176,56 @@ function updateSelectedHeroPanel() {
 
   const nextCost = entry.level >= 30 ? "max" : upgradeCost(monsterId);
   ui.towerInfo.innerHTML = `
-    <div class="hero-line hero-title-row">${monster.name} • ${monster.rarity}</div>
-    <div class="hero-line">lv ${entry.level} • stars ${entry.stars} • ${positionText}</div>
-    <div class="hero-line">damage ${stats.damage.toFixed(0)} • atk/s ${(1 / stats.attackDelay).toFixed(2)} • range ${stats.range.toFixed(1)}</div>
-    <div class="hero-skill-row">
-      <img class="skill-inline-icon" src="${specialIcon}" alt="active icon" />
-      <div>
-        <div class="hero-skill-name">active: ${specialLabel}</div>
-        <div class="hero-skill-desc">${specialPower}</div>
+    <div class="hero-sheet">
+      <div class="hero-sheet-top">
+        <div class="hero-sheet-name">${monster.name}</div>
+        <div class="hero-chip-row">
+          <span class="hero-chip">lv ${entry.level}</span>
+          <span class="hero-chip">stars ${entry.stars}</span>
+          <span class="hero-chip">${monster.rarity}</span>
+          <span class="hero-chip">${positionText}</span>
+        </div>
+      </div>
+
+      <div class="hero-section-card">
+        <div class="hero-section-title">passive</div>
+        <div class="hero-skill-row">
+          <img class="skill-inline-icon" src="${passiveIcon}" alt="passive icon" />
+          <div>
+            <div class="hero-skill-name">${passiveLabel}</div>
+            <div class="hero-skill-desc">${getPassiveDescription(monster.passive)}</div>
+            <div class="hero-skill-power">${passivePower}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-section-card">
+        <div class="hero-section-title">stats</div>
+        <div class="hero-stat-list">
+          <div class="hero-stat-row"><span class="hero-stat-key"><span class="hero-stat-dot stamina"></span>stamina</span><strong>${statStamina}</strong></div>
+          <div class="hero-stat-row"><span class="hero-stat-key"><span class="hero-stat-dot attack"></span>attack</span><strong>${statAttack}</strong></div>
+          <div class="hero-stat-row"><span class="hero-stat-key"><span class="hero-stat-dot defense"></span>defense</span><strong>${statDefense}</strong></div>
+          <div class="hero-stat-row"><span class="hero-stat-key"><span class="hero-stat-dot speed"></span>speed</span><strong>${statSpeed}</strong></div>
+          <div class="hero-stat-row"><span class="hero-stat-key"><span class="hero-stat-dot crit"></span>crit chance</span><strong>${statCrit}</strong></div>
+          <div class="hero-stat-row"><span class="hero-stat-key"><span class="hero-stat-dot range"></span>range</span><strong>${stats.range.toFixed(1)}</strong></div>
+          <div class="hero-stat-row"><span class="hero-stat-key"><span class="hero-stat-dot aps"></span>atk/s</span><strong>${atkSpeed}</strong></div>
+        </div>
+      </div>
+
+      <div class="hero-section-card">
+        <div class="hero-section-title">skills</div>
+        <div class="detail-skill-row">
+          <img class="skill-inline-icon" src="${specialIcon}" alt="active icon" />
+          <div>
+            <div class="hero-skill-name">${specialLabel}</div>
+            <div class="hero-skill-desc">${getSpecialDescription(monster.special)}</div>
+            <div class="hero-skill-power">${specialPower}</div>
+          </div>
+        </div>
+        <div class="hero-sheet-footer">extras: ${extrasText}</div>
+        <div class="hero-sheet-footer">next upgrade: ${nextCost}</div>
       </div>
     </div>
-    <div class="hero-skill-row">
-      <img class="skill-inline-icon" src="${passiveIcon}" alt="passive icon" />
-      <div>
-        <div class="hero-skill-name">passive: ${passiveLabel}</div>
-        <div class="hero-skill-desc">${passivePower}</div>
-      </div>
-    </div>
-    <div class="hero-line">extras: ${extrasText}</div>
-    <div class="hero-line">next upgrade: ${nextCost}</div>
   `;
 
   ui.upgradeBtn.disabled = entry.level >= 30 || !entry.owned;

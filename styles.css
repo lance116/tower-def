@@ -151,8 +151,11 @@ body {
   top: 52%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(1060px, calc(100vw - 20px));
-  max-height: min(56vh, 500px);
+  width: min(1180px, calc(100vw - 20px));
+  max-height: min(78vh, 760px);
+  padding: 14px 16px;
+  background: linear-gradient(180deg, rgba(58, 49, 36, 0.93), rgba(47, 40, 31, 0.9));
+  border-color: #9e8057;
   overflow: auto;
 }
 
@@ -238,9 +241,19 @@ button:disabled {
 }
 
 #towerInfo {
-  min-height: 90px;
+  min-height: 260px;
   white-space: normal;
   line-height: 1.28;
+}
+
+#rightPanel h2 {
+  color: #f4e9d8;
+  font-size: 1.12rem;
+  letter-spacing: 0.03em;
+}
+
+#rightPanel #hintText {
+  color: #e6d4bc;
 }
 
 .hero-line {
@@ -250,6 +263,105 @@ button:disabled {
 .hero-title-row {
   font: 800 0.94rem/1.1 "Baloo 2", sans-serif;
   color: #5b3518;
+}
+
+.hero-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hero-sheet-top {
+  border-radius: 14px;
+  border: 2px solid rgba(236, 213, 176, 0.45);
+  background: linear-gradient(180deg, rgba(255, 250, 236, 0.98), rgba(242, 228, 203, 0.96));
+  padding: 10px 12px;
+}
+
+.hero-sheet-name {
+  font: 800 1.22rem/1.06 "Baloo 2", sans-serif;
+  color: #4e2f18;
+  text-transform: lowercase;
+  margin-bottom: 8px;
+}
+
+.hero-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hero-chip {
+  border-radius: 999px;
+  border: 1px solid rgba(120, 87, 55, 0.42);
+  background: rgba(255, 255, 255, 0.72);
+  color: #664228;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 9px;
+}
+
+.hero-section-card {
+  border-radius: 16px;
+  border: 2px solid rgba(237, 211, 172, 0.45);
+  background: linear-gradient(180deg, rgba(254, 250, 240, 0.98), rgba(240, 226, 201, 0.97));
+  padding: 10px 12px;
+}
+
+.hero-section-title {
+  font: 800 1rem/1 "Baloo 2", sans-serif;
+  color: #4f3018;
+  letter-spacing: 0.03em;
+  text-transform: lowercase;
+  margin-bottom: 8px;
+}
+
+.hero-stat-list {
+  display: grid;
+  gap: 0;
+}
+
+.hero-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(104, 72, 42, 0.19);
+}
+
+.hero-stat-row:last-child {
+  border-bottom: none;
+}
+
+.hero-stat-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #53361f;
+  text-transform: lowercase;
+}
+
+.hero-stat-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.hero-stat-dot.stamina { background: #7b6d64; }
+.hero-stat-dot.attack { background: #de7c45; }
+.hero-stat-dot.defense { background: #6f89bf; }
+.hero-stat-dot.speed { background: #8fbf4c; }
+.hero-stat-dot.crit { background: #d2a34d; }
+.hero-stat-dot.range { background: #54a6b4; }
+.hero-stat-dot.aps { background: #a96bd1; }
+
+.hero-stat-row strong {
+  font: 800 0.95rem/1 "Baloo 2", sans-serif;
+  color: #3f2410;
 }
 
 .hero-skill-row,
@@ -265,11 +377,26 @@ button:disabled {
   font-weight: 800;
   color: #5e3c1d;
   text-transform: lowercase;
+  font-size: 0.87rem;
 }
 
 .hero-skill-desc {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: #684f38;
+}
+
+.hero-skill-power {
+  margin-top: 3px;
+  color: #7e5330;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.hero-sheet-footer {
+  margin-top: 6px;
+  font-size: 0.76rem;
+  color: #6d4b2f;
+  font-weight: 800;
 }
 
 .detail-line {
@@ -523,7 +650,7 @@ button:disabled {
   #rightPanel {
     top: 50%;
     width: calc(100vw - 16px);
-    max-height: min(54vh, 430px);
+    max-height: min(74vh, 620px);
   }
 
   #rosterPanel {
@@ -568,7 +695,8 @@ button:disabled {
   #rightPanel {
     top: 48%;
     width: calc(100vw - 12px);
-    max-height: min(50vh, 360px);
+    max-height: min(70vh, 560px);
+    padding: 10px 11px;
   }
 
   #rosterPanel {
