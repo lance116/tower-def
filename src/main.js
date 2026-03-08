@@ -434,6 +434,40 @@ const SKILL_ICON_PATHS = {
 
 const skillIconCache = new Map();
 
+const PASSIVE_AURA_STYLES = {
+  ooze_regen: { color: 0x87e879, accent: 0xd7ffd0, kind: "ripple", spin: 1.2, pulse: 2.2, interval: 1.7 },
+  espresso_crit: { color: 0xffd273, accent: 0xff9648, kind: "spark", spin: 2.8, pulse: 3.8, interval: 1.35 },
+  glacier_venom: { color: 0x8eefff, accent: 0x61cbff, kind: "shard", spin: 1.7, pulse: 2.9, interval: 1.55 },
+  pack_hunter: { color: 0xffba86, accent: 0xff7d5f, kind: "claw", spin: 2.5, pulse: 3.2, interval: 1.45 },
+  armor_break: { color: 0xff8f8a, accent: 0xff5f58, kind: "slash", spin: 3.3, pulse: 3.8, interval: 1.35 },
+  barista_focus: { color: 0xffdfb5, accent: 0xc9985f, kind: "sigil", spin: 1.5, pulse: 2.2, interval: 1.75 },
+  divine_command: { color: 0xfff292, accent: 0xd3b04d, kind: "halo", spin: 1.1, pulse: 2, interval: 1.8 },
+  hyperflow: { color: 0x93e5ff, accent: 0x4ea4ff, kind: "spiral", spin: 3.9, pulse: 4.4, interval: 1.2 },
+  permafrost: { color: 0xbdf8ff, accent: 0x72ddff, kind: "snow", spin: 1.4, pulse: 2.6, interval: 1.55 },
+  royal_tribute: { color: 0xd5a6ff, accent: 0xa26cec, kind: "crown", spin: 1.6, pulse: 2.5, interval: 1.65 },
+  solar_burn: { color: 0xffb783, accent: 0xff744a, kind: "flare", spin: 2.1, pulse: 3.1, interval: 1.3 },
+  apex_predator: { color: 0xffcf83, accent: 0xde8840, kind: "fang", spin: 2.4, pulse: 2.9, interval: 1.4 },
+  high_plunder: { color: 0xffade7, accent: 0xff6bc8, kind: "gem", spin: 2.7, pulse: 3.3, interval: 1.25 },
+  alpha_howl: { color: 0xff916c, accent: 0xc25340, kind: "howl", spin: 2.3, pulse: 3.2, interval: 1.45 }
+};
+
+const SPECIAL_FX_STYLES = {
+  slime_flood: { color: 0x86ea8b, accent: 0xc6ffd2, kind: "ripple", size: 1.2, life: 0.88 },
+  rapid_brew: { color: 0xffd37c, accent: 0xffaa5d, kind: "spark", size: 1.05, life: 0.62 },
+  frost_spike_burst: { color: 0x9bedff, accent: 0x6fd8ff, kind: "shard", size: 1.16, life: 0.86 },
+  maul_quake: { color: 0xffb180, accent: 0xff8c5e, kind: "claw", size: 1.3, life: 0.9 },
+  execution_strike: { color: 0xff958c, accent: 0xff5f58, kind: "slash", size: 1.06, life: 0.62 },
+  latte_barrier: { color: 0xffe0bb, accent: 0xe1b57e, kind: "sigil", size: 1.35, life: 1.02 },
+  divine_smite: { color: 0xffec86, accent: 0xffc64f, kind: "halo", size: 1.35, life: 0.78 },
+  time_warp: { color: 0x97e7ff, accent: 0x62b8ff, kind: "spiral", size: 1.24, life: 0.92 },
+  blizzard_nova: { color: 0xb7f8ff, accent: 0x89dfff, kind: "snow", size: 1.45, life: 0.98 },
+  global_stun: { color: 0xb08fff, accent: 0xd4c2ff, kind: "crown", size: 1.46, life: 1.04 },
+  meteor_rain: { color: 0xffa889, accent: 0xff7f63, kind: "flare", size: 1.32, life: 0.86 },
+  dragon_fury: { color: 0xffcf74, accent: 0xffa043, kind: "fang", size: 1.38, life: 0.86 },
+  broadside: { color: 0xff98eb, accent: 0xff67d8, kind: "gem", size: 1.24, life: 0.78 },
+  inferno_aura: { color: 0xff8665, accent: 0xff5e3f, kind: "howl", size: 1.15, life: 0.82 }
+};
+
 const enemyTypes = {
   grunt: {
     name: "footman",
@@ -614,6 +648,7 @@ const enemies = [];
 const projectiles = [];
 const pulses = [];
 const floorMarks = [];
+const skillEffects = [];
 
 const toonGradientMap = createToonGradientTexture();
 const spriteCache = new Map();
@@ -727,6 +762,139 @@ function getSkillIconUri(kind, skillId) {
   const uri = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   skillIconCache.set(key, uri);
   return uri;
+}
+
+function getPassiveAuraStyle(passiveId) {
+  return PASSIVE_AURA_STYLES[passiveId] || {
+    color: 0xcce8ff,
+    accent: 0x8ec7ff,
+    kind: "ripple",
+    spin: 1.8,
+    pulse: 2.8,
+    interval: 1.6
+  };
+}
+
+function getSpecialFxStyle(specialId) {
+  return SPECIAL_FX_STYLES[specialId] || {
+    color: 0xffd38d,
+    accent: 0xffb568,
+    kind: "halo",
+    size: 1.2,
+    life: 0.8
+  };
+}
+
+function createFxMaterial(color, opacity = 0.8) {
+  return new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity,
+    side: THREE.DoubleSide,
+    depthWrite: false
+  });
+}
+
+function addFxMesh(effect, mesh) {
+  effect.group.add(mesh);
+  if (mesh.material && "opacity" in mesh.material) {
+    effect.materials.push(mesh.material);
+  }
+}
+
+function spawnMagicFx(kind, position, color, accent, size = 1, life = 0.8) {
+  const effect = {
+    group: new THREE.Group(),
+    materials: [],
+    life,
+    age: 0,
+    size,
+    spin: (Math.random() * 1.8 + 0.7) * (Math.random() < 0.5 ? -1 : 1),
+    drift: 0.2 + Math.random() * 0.32,
+    kind
+  };
+
+  const y = Math.max(0.08, (position.y || 0) * 0.08 + 0.08);
+  effect.group.position.set(position.x, y, position.z);
+
+  const baseRing = new THREE.Mesh(
+    new THREE.RingGeometry(0.25 * size, 0.42 * size, 28),
+    createFxMaterial(color, 0.78)
+  );
+  baseRing.rotation.x = -Math.PI / 2;
+  baseRing.userData.spin = 1.4;
+  addFxMesh(effect, baseRing);
+
+  if (kind === "ripple" || kind === "halo" || kind === "sigil") {
+    const outerRing = new THREE.Mesh(
+      new THREE.RingGeometry(0.5 * size, 0.66 * size, 32),
+      createFxMaterial(accent, 0.66)
+    );
+    outerRing.rotation.x = -Math.PI / 2;
+    outerRing.userData.spin = -1;
+    addFxMesh(effect, outerRing);
+  }
+
+  if (kind === "spark" || kind === "slash" || kind === "claw") {
+    for (let i = 0; i < 4; i += 1) {
+      const slash = new THREE.Mesh(
+        new THREE.BoxGeometry(0.38 * size, 0.03, 0.07 * size),
+        createFxMaterial(accent, 0.82)
+      );
+      const a = (i / 4) * Math.PI * 2;
+      slash.position.set(Math.cos(a) * 0.46 * size, 0.05, Math.sin(a) * 0.46 * size);
+      slash.rotation.y = a + Math.PI * 0.5;
+      slash.userData.spin = 2.4;
+      addFxMesh(effect, slash);
+    }
+  }
+
+  if (kind === "shard" || kind === "snow" || kind === "crown") {
+    for (let i = 0; i < 5; i += 1) {
+      const shard = new THREE.Mesh(
+        new THREE.ConeGeometry(0.045 * size, 0.26 * size, 6),
+        createFxMaterial(accent, 0.8)
+      );
+      const a = (i / 5) * Math.PI * 2;
+      shard.position.set(Math.cos(a) * 0.44 * size, 0.06, Math.sin(a) * 0.44 * size);
+      shard.rotation.x = Math.PI / 2;
+      shard.rotation.z = a;
+      shard.userData.spin = -2;
+      addFxMesh(effect, shard);
+    }
+  }
+
+  if (kind === "spiral" || kind === "howl") {
+    const helix = new THREE.Mesh(
+      new THREE.TorusGeometry(0.34 * size, 0.038 * size, 8, 22),
+      createFxMaterial(accent, 0.7)
+    );
+    helix.rotation.x = -Math.PI / 2;
+    helix.userData.spin = 3.6;
+    addFxMesh(effect, helix);
+  }
+
+  if (kind === "flare" || kind === "fang" || kind === "gem") {
+    const core = new THREE.Mesh(
+      new THREE.CircleGeometry(0.16 * size, 18),
+      createFxMaterial(color, 0.9)
+    );
+    core.rotation.x = -Math.PI / 2;
+    addFxMesh(effect, core);
+  }
+
+  scene.add(effect.group);
+  skillEffects.push(effect);
+}
+
+function spawnPassiveEffect(passiveId, position) {
+  const style = getPassiveAuraStyle(passiveId);
+  spawnMagicFx(style.kind, position, style.color, style.accent, 0.88, 0.8);
+}
+
+function spawnSpecialEffect(specialId, position, scale = 1) {
+  const style = getSpecialFxStyle(specialId);
+  spawnMagicFx(style.kind, position, style.color, style.accent, style.size * scale, style.life);
 }
 
 function formatPercent(value) {
@@ -1247,6 +1415,7 @@ function placeHeroInSlot(monsterId, slotIndex) {
     baseY: pos.y,
     cooldown: Math.random() * 0.45,
     specialCd: monster.specialCooldown || 0,
+    passiveFxTimer: 0.65 + Math.random() * 1.2,
     disabledTimer: 0,
     animSeed: Math.random() * Math.PI * 2
   };
@@ -1401,6 +1570,35 @@ function createHeroMesh(monsterId) {
   let rareAura = null;
   let orbitGroup = null;
   let orbitGroup2 = null;
+  let passiveAura = null;
+  let passiveAuraInner = null;
+
+  const passiveStyle = getPassiveAuraStyle(monster.passive);
+  passiveAura = new THREE.Mesh(
+    new THREE.RingGeometry(0.74, 0.97, 28),
+    new THREE.MeshBasicMaterial({
+      color: passiveStyle.color,
+      transparent: true,
+      opacity: 0.42,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    })
+  );
+  passiveAura.rotation.x = -Math.PI / 2;
+  passiveAura.position.y = 0.1;
+
+  passiveAuraInner = new THREE.Mesh(
+    new THREE.RingGeometry(0.46, 0.57, 20),
+    new THREE.MeshBasicMaterial({
+      color: passiveStyle.accent,
+      transparent: true,
+      opacity: 0.34,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    })
+  );
+  passiveAuraInner.rotation.x = -Math.PI / 2;
+  passiveAuraInner.position.y = 0.12;
 
   if (monster.rarity === "epic" || monster.rarity === "legendary" || monster.rarity === "special") {
     rareAura = new THREE.Mesh(
@@ -1496,10 +1694,22 @@ function createHeroMesh(monsterId) {
   }
 
   group.add(base, ring, body, eyeL, eyeR, mouth, iconSprite);
+  if (passiveAura) group.add(passiveAura);
+  if (passiveAuraInner) group.add(passiveAuraInner);
   if (rareAura) group.add(rareAura);
   if (orbitGroup) group.add(orbitGroup);
   if (orbitGroup2) group.add(orbitGroup2);
-  group.userData.visuals = { ring, iconSprite, body, iconScale: rarityIconScale, rareAura, orbitGroup, orbitGroup2 };
+  group.userData.visuals = {
+    ring,
+    iconSprite,
+    body,
+    iconScale: rarityIconScale,
+    rareAura,
+    orbitGroup,
+    orbitGroup2,
+    passiveAura,
+    passiveAuraInner
+  };
   return group;
 }
 
@@ -2147,8 +2357,10 @@ function updateBarrierVisual(barrier) {
 
 function updateHeroes(dt, elapsed) {
   for (const hero of heroes) {
+    const monster = monsterCatalog[hero.monsterId];
     const visuals = hero.mesh.userData.visuals;
     if (visuals) {
+      const passiveStyle = getPassiveAuraStyle(monster.passive);
       const bob = Math.sin(elapsed * 2.6 + hero.animSeed) * 0.09;
       hero.mesh.position.y = hero.baseY + bob;
       visuals.ring.rotation.z += dt * 1.7;
@@ -2158,6 +2370,18 @@ function updateHeroes(dt, elapsed) {
       if (visuals.rareAura) visuals.rareAura.rotation.z += dt * 1.25;
       if (visuals.orbitGroup) visuals.orbitGroup.rotation.y += dt * 2;
       if (visuals.orbitGroup2) visuals.orbitGroup2.rotation.y -= dt * 2.7;
+      if (visuals.passiveAura) {
+        const auraPulse = 0.92 + Math.sin(elapsed * passiveStyle.pulse + hero.animSeed) * 0.12;
+        visuals.passiveAura.rotation.z += dt * passiveStyle.spin;
+        visuals.passiveAura.scale.setScalar(auraPulse);
+        visuals.passiveAura.material.opacity = 0.32 + auraPulse * 0.14;
+      }
+      if (visuals.passiveAuraInner) {
+        const innerPulse = 0.94 + Math.cos(elapsed * (passiveStyle.pulse + 0.9) + hero.animSeed) * 0.1;
+        visuals.passiveAuraInner.rotation.z -= dt * (passiveStyle.spin + 0.8);
+        visuals.passiveAuraInner.scale.setScalar(innerPulse);
+        visuals.passiveAuraInner.material.opacity = 0.26 + innerPulse * 0.12;
+      }
     }
 
     if (hero.disabledTimer > 0) {
@@ -2168,8 +2392,13 @@ function updateHeroes(dt, elapsed) {
 
     hero.cooldown -= dt;
 
-    const monster = monsterCatalog[hero.monsterId];
     const stats = getHeroStats(hero);
+    const passiveStyle = getPassiveAuraStyle(monster.passive);
+    hero.passiveFxTimer -= dt;
+    if (hero.passiveFxTimer <= 0) {
+      spawnPassiveEffect(monster.passive, hero.mesh.position);
+      hero.passiveFxTimer = passiveStyle.interval + Math.random() * 0.35;
+    }
 
     if (monster.passive === "hyperflow" && hero.specialCd > 0) {
       hero.specialCd = Math.max(0, hero.specialCd - dt * 0.55);
@@ -2219,6 +2448,7 @@ function triggerHeroSpecial(hero, monster, stats) {
       soaked += 1;
     }
     healChest(3 + soaked * 0.8);
+    spawnSpecialEffect(monster.special, target.mesh.position, 1.2);
     spawnFloorMark(target.mesh.position, 0x87ea88, 2.8, 0.8);
     log("slimey cast slime flood.");
     return true;
@@ -2235,9 +2465,11 @@ function triggerHeroSpecial(hero, monster, stats) {
       applyDamage(t, stats.damage * multipliers[i]);
       t.stunTimer = Math.max(t.stunTimer, 0.2 + i * 0.12);
       spawnPulse(t.mesh.position, 0xffcd7c, 0.32);
+      spawnSpecialEffect(monster.special, t.mesh.position, 0.72 + i * 0.1);
     }
     hero.cooldown = Math.min(hero.cooldown, 0.06);
     spawnPulse(hero.mesh.position, 0xffd47f, 0.62);
+    spawnSpecialEffect(monster.special, hero.mesh.position, 1);
     log("mocha cast rapid brew.");
     return true;
   }
@@ -2258,8 +2490,10 @@ function triggerHeroSpecial(hero, monster, stats) {
       t.slowTimer = Math.max(t.slowTimer, 3.6);
       if (i === 0) t.stunTimer = Math.max(t.stunTimer, 0.55);
       spawnPulse(t.mesh.position, 0x9deeff, 0.36);
+      spawnSpecialEffect(monster.special, t.mesh.position, 0.78 + i * 0.08);
     }
     spawnFloorMark(hero.mesh.position, 0x97eeff, 2.7, 0.64);
+    spawnSpecialEffect(monster.special, hero.mesh.position, 1.1);
     log("spikey cast frost spike burst.");
     return true;
   }
@@ -2273,6 +2507,7 @@ function triggerHeroSpecial(hero, monster, stats) {
       enemy.stunTimer = Math.max(enemy.stunTimer, 1.2);
     }
     spawnPulse(target.mesh.position, 0xffb07a, 0.68);
+    spawnSpecialEffect(monster.special, target.mesh.position, 1.25);
     log("teddy cast maul quake.");
     return true;
   }
@@ -2287,6 +2522,7 @@ function triggerHeroSpecial(hero, monster, stats) {
       applyDamage(target, target.maxHp * 0.85);
     }
     spawnPulse(target.mesh.position, 0xff9b89, 0.5);
+    spawnSpecialEffect(monster.special, target.mesh.position, 1.02);
     log("clyde cast execution strike.");
     return true;
   }
@@ -2298,6 +2534,7 @@ function triggerHeroSpecial(hero, monster, stats) {
       ally.disabledTimer = Math.max(0, ally.disabledTimer - 0.45);
     }
     spawnPulse(chestMesh.position, 0xffe0b4, 0.72);
+    spawnSpecialEffect(monster.special, chestMesh.position, 1.3);
     log(`cappuccino cast latte barrier (+${Math.round(shieldGain)} shield).`);
     return true;
   }
@@ -2308,6 +2545,7 @@ function triggerHeroSpecial(hero, monster, stats) {
       applyDamage(enemy, stats.damage * 0.9);
     }
     spawnPulse(hero.mesh.position, 0xad91ff, 0.7);
+    spawnSpecialEffect(monster.special, hero.mesh.position, 1.34);
     log("slime king cast royal decree.");
     return true;
   }
@@ -2318,6 +2556,7 @@ function triggerHeroSpecial(hero, monster, stats) {
     applyDamage(target, stats.damage * 4.2);
     damageArea(target.mesh.position, 2.8, stats.damage * 1.8);
     spawnPulse(target.mesh.position, 0xffe074, 0.66);
+    spawnSpecialEffect(monster.special, target.mesh.position, 1.22);
     log("mighty cast divine smite.");
     return true;
   }
@@ -2329,6 +2568,7 @@ function triggerHeroSpecial(hero, monster, stats) {
       ally.specialCd = Math.max(0, ally.specialCd - 0.8);
     }
     spawnPulse(hero.mesh.position, 0x89e4ff, 0.66);
+    spawnSpecialEffect(monster.special, hero.mesh.position, 1.2);
     log("speedy cast time warp.");
     return true;
   }
@@ -2345,9 +2585,11 @@ function triggerHeroSpecial(hero, monster, stats) {
       t.slowFactor = Math.min(t.slowFactor, 0.3);
       t.slowTimer = Math.max(t.slowTimer, 3.8);
       t.stunTimer = Math.max(t.stunTimer, 0.45);
+      spawnSpecialEffect(monster.special, t.mesh.position, 0.75 + i * 0.06);
     }
     spawnPulse(hero.mesh.position, 0xb1f4ff, 0.78);
     spawnFloorMark(hero.mesh.position, 0xa9efff, 3.2, 0.75);
+    spawnSpecialEffect(monster.special, hero.mesh.position, 1.36);
     log("frostbite cast blizzard nova.");
     return true;
   }
@@ -2359,6 +2601,7 @@ function triggerHeroSpecial(hero, monster, stats) {
       damageArea(t.mesh.position, 3.1, stats.damage * 2.25);
       t.stunTimer = Math.max(t.stunTimer, 0.5);
       spawnFloorMark(t.mesh.position, 0xff8c5f, 2.2, 0.62);
+      spawnSpecialEffect(monster.special, t.mesh.position, 0.9);
     }
     log("felina called meteor rain.");
     return true;
@@ -2375,7 +2618,9 @@ function triggerHeroSpecial(hero, monster, stats) {
         applyDamage(t, t.maxHp * 0.55);
       }
       spawnPulse(t.mesh.position, 0xffcd69, 0.5);
+      spawnSpecialEffect(monster.special, t.mesh.position, 0.95);
     }
+    spawnSpecialEffect(monster.special, hero.mesh.position, 1.18);
     log("kevin unleashed dragon fury.");
     return true;
   }
@@ -2387,9 +2632,11 @@ function triggerHeroSpecial(hero, monster, stats) {
     if (!targets.length) return false;
     for (const t of targets) {
       damageArea(t.mesh.position, 2.3, stats.damage * 1.5);
+      spawnSpecialEffect(monster.special, t.mesh.position, 0.82);
     }
     state.gold += 22;
     spawnPulse(hero.mesh.position, 0xff8de9, 0.65);
+    spawnSpecialEffect(monster.special, hero.mesh.position, 1.15);
     log("pirate cat fired broadside (+22 gold).");
     return true;
   }
@@ -2406,6 +2653,7 @@ function triggerHeroSpecial(hero, monster, stats) {
     }
     if (hitAny) {
       spawnPulse(origin, 0xff7f5a, 0.6);
+      spawnSpecialEffect(monster.special, origin, 1.04);
       log("hellhound ignited inferno aura.");
     }
     return hitAny;
@@ -2870,6 +3118,35 @@ function updateFloorMarks(dt) {
   }
 }
 
+function updateSkillEffects(dt) {
+  for (let i = skillEffects.length - 1; i >= 0; i -= 1) {
+    const fx = skillEffects[i];
+    fx.age += dt;
+    const t = fx.age / fx.life;
+
+    if (t >= 1) {
+      scene.remove(fx.group);
+      skillEffects.splice(i, 1);
+      continue;
+    }
+
+    const scale = 1 + t * 2.1;
+    fx.group.scale.setScalar(scale);
+    fx.group.rotation.y += dt * fx.spin;
+    fx.group.position.y += dt * fx.drift;
+
+    const opacity = (1 - t) * (fx.kind === "flare" ? 0.95 : 0.82);
+    for (const material of fx.materials) {
+      material.opacity = opacity;
+    }
+
+    for (const child of fx.group.children) {
+      if (!child.userData.spin) continue;
+      child.rotation.z += dt * child.userData.spin;
+    }
+  }
+}
+
 function removeEnemy(index, killed) {
   const enemy = enemies[index];
   if (!enemy) return;
@@ -3089,10 +3366,12 @@ function restartRun() {
   for (const projectile of projectiles) scene.remove(projectile.mesh);
   for (const pulse of pulses) scene.remove(pulse.mesh);
   for (const mark of floorMarks) scene.remove(mark.mesh);
+  for (const fx of skillEffects) scene.remove(fx.group);
   enemies.length = 0;
   projectiles.length = 0;
   pulses.length = 0;
   floorMarks.length = 0;
+  skillEffects.length = 0;
 
   for (let i = heroes.length - 1; i >= 0; i -= 1) {
     scene.remove(heroes[i].mesh);
@@ -3469,6 +3748,7 @@ function tick() {
     updateProjectiles(dt);
     updatePulses(dt);
     updateFloorMarks(dt);
+    updateSkillEffects(dt);
 
     state.saveTimer += baseDt;
     if (state.saveTimer >= 5) {
@@ -3480,6 +3760,7 @@ function tick() {
     updateProjectiles(dt);
     updatePulses(dt);
     updateFloorMarks(dt);
+    updateSkillEffects(dt);
   }
 
   updateChestVisual(dt);
