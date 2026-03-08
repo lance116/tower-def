@@ -147,6 +147,9 @@ const monsterCatalog = {
     baseDamage: 16,
     range: 7,
     fireRate: 1.2,
+    passive: "ooze_regen",
+    special: "slime_flood",
+    specialCooldown: 12.5,
     projectileColor: 0xb9ff8f
   },
   mocha: {
@@ -157,6 +160,9 @@ const monsterCatalog = {
     baseDamage: 12,
     range: 6.2,
     fireRate: 1.9,
+    passive: "espresso_crit",
+    special: "rapid_brew",
+    specialCooldown: 11.8,
     projectileColor: 0xffd46e
   },
   spikey: {
@@ -169,6 +175,9 @@ const monsterCatalog = {
     fireRate: 1.05,
     slow: 0.62,
     slowDuration: 1.4,
+    passive: "glacier_venom",
+    special: "frost_spike_burst",
+    specialCooldown: 11.2,
     projectileColor: 0x9be8ff
   },
   teddy: {
@@ -180,6 +189,9 @@ const monsterCatalog = {
     range: 6.6,
     fireRate: 1.15,
     splash: 2.5,
+    passive: "pack_hunter",
+    special: "maul_quake",
+    specialCooldown: 10.6,
     projectileColor: 0xffbf7f
   },
   clyde: {
@@ -190,6 +202,9 @@ const monsterCatalog = {
     baseDamage: 28,
     range: 5.8,
     fireRate: 0.8,
+    passive: "armor_break",
+    special: "execution_strike",
+    specialCooldown: 10.2,
     projectileColor: 0xff8e8e
   },
   cappuccino: {
@@ -202,6 +217,9 @@ const monsterCatalog = {
     fireRate: 1,
     stunChance: 0.18,
     stunDuration: 1.2,
+    passive: "barista_focus",
+    special: "latte_barrier",
+    specialCooldown: 9.8,
     projectileColor: 0xffdf9e
   },
   mighty: {
@@ -213,6 +231,7 @@ const monsterCatalog = {
     range: 6.2,
     fireRate: 1.05,
     supportDamage: 0.58,
+    passive: "divine_command",
     special: "divine_smite",
     specialCooldown: 7.5,
     projectileColor: 0xffec8f
@@ -226,6 +245,7 @@ const monsterCatalog = {
     range: 6,
     fireRate: 1.2,
     supportSpeed: 0.72,
+    passive: "hyperflow",
     special: "time_warp",
     specialCooldown: 9.2,
     projectileColor: 0x95e8ff
@@ -243,6 +263,9 @@ const monsterCatalog = {
     slowDuration: 2.4,
     chainJumps: 3,
     chainFalloff: 0.72,
+    passive: "permafrost",
+    special: "blizzard_nova",
+    specialCooldown: 8.8,
     projectileColor: 0xb9f8ff
   },
   slime_king: {
@@ -253,6 +276,7 @@ const monsterCatalog = {
     baseDamage: 44,
     range: 7.4,
     fireRate: 1.2,
+    passive: "royal_tribute",
     special: "global_stun",
     specialCooldown: 8.5,
     projectileColor: 0xb89eff
@@ -266,6 +290,7 @@ const monsterCatalog = {
     range: 10,
     fireRate: 1,
     splash: 4.4,
+    passive: "solar_burn",
     special: "meteor_rain",
     specialCooldown: 8,
     projectileColor: 0xffa887
@@ -280,6 +305,7 @@ const monsterCatalog = {
     fireRate: 1.15,
     tripleHit: true,
     executeThreshold: 0.28,
+    passive: "apex_predator",
     special: "dragon_fury",
     specialCooldown: 7.2,
     projectileColor: 0xffe18c
@@ -296,6 +322,7 @@ const monsterCatalog = {
     special: "broadside",
     specialCooldown: 8.8,
     goldStealChance: 0.32,
+    passive: "high_plunder",
     projectileColor: 0xff96e8
   },
   hellhound: {
@@ -307,6 +334,7 @@ const monsterCatalog = {
     range: 6.2,
     fireRate: 1.28,
     supportDamage: 0.74,
+    passive: "alpha_howl",
     special: "inferno_aura",
     specialCooldown: 2.1,
     burnDps: 28,
@@ -330,6 +358,40 @@ const MONSTER_VISUALS = {
   kevin: { silhouette: "dragon", symbol: "fang", badge: "ke" },
   pirate_cat: { silhouette: "cat", symbol: "skull", badge: "pc" },
   hellhound: { silhouette: "beast", symbol: "claw", badge: "hh" }
+};
+
+const SPECIAL_LABELS = {
+  slime_flood: "slime flood",
+  rapid_brew: "rapid brew",
+  frost_spike_burst: "frost spike burst",
+  maul_quake: "maul quake",
+  execution_strike: "execution strike",
+  latte_barrier: "latte barrier",
+  divine_smite: "divine smite",
+  time_warp: "time warp",
+  blizzard_nova: "blizzard nova",
+  global_stun: "royal decree",
+  meteor_rain: "meteor rain",
+  dragon_fury: "dragon fury",
+  broadside: "broadside",
+  inferno_aura: "inferno aura"
+};
+
+const PASSIVE_LABELS = {
+  ooze_regen: "ooze regen",
+  espresso_crit: "espresso crit",
+  glacier_venom: "glacier venom",
+  pack_hunter: "pack hunter",
+  armor_break: "armor break",
+  barista_focus: "barista focus",
+  divine_command: "divine command",
+  hyperflow: "hyperflow",
+  permafrost: "permafrost",
+  royal_tribute: "royal tribute",
+  solar_burn: "solar burn",
+  apex_predator: "apex predator",
+  high_plunder: "high plunder",
+  alpha_howl: "alpha howl"
 };
 
 const enemyTypes = {
@@ -455,6 +517,7 @@ const state = {
   orbs: 120,
   stones: 0,
   chestHp: 120,
+  chestShield: 0,
   chestHpMax: 120,
   wave: 1,
   waveActive: false,
@@ -555,6 +618,14 @@ function tileToWorld(x, y, yOffset = 0) {
 
 function getMonsterVisual(monsterId) {
   return MONSTER_VISUALS[monsterId] || { silhouette: "blob", symbol: "orb", badge: monsterId.slice(0, 2) };
+}
+
+function getSpecialLabel(specialId) {
+  return SPECIAL_LABELS[specialId] || "none";
+}
+
+function getPassiveLabel(passiveId) {
+  return PASSIVE_LABELS[passiveId] || "none";
 }
 
 function createToonGradientTexture() {
@@ -1631,6 +1702,8 @@ function spawnEnemy(type) {
     stunTimer: 0,
     burnTimer: 0,
     burnDps: 0,
+    armorBreakTimer: 0,
+    damageTakenMult: 1,
     abilityCd: 3 + Math.random() * 2,
     attackCd: 0.25,
     isBoss: !!enemyType.isBoss
@@ -1693,6 +1766,13 @@ function updateEnemies(dt) {
       if (enemy.hp <= 0) {
         removeEnemy(i, true);
         continue;
+      }
+    }
+
+    if (enemy.armorBreakTimer > 0) {
+      enemy.armorBreakTimer -= dt;
+      if (enemy.armorBreakTimer <= 0) {
+        enemy.damageTakenMult = 1;
       }
     }
 
@@ -1852,6 +1932,19 @@ function updateHeroes(dt, elapsed) {
 
     const monster = monsterCatalog[hero.monsterId];
     const stats = getHeroStats(hero);
+
+    if (monster.passive === "hyperflow" && hero.specialCd > 0) {
+      hero.specialCd = Math.max(0, hero.specialCd - dt * 0.55);
+    }
+
+    if (monster.passive === "alpha_howl") {
+      for (const ally of heroes) {
+        if (ally === hero) continue;
+        if (ally.mesh.position.distanceToSquared(hero.mesh.position) > 5.8 * 5.8) continue;
+        ally.cooldown = Math.max(0, ally.cooldown - dt * 0.18);
+      }
+    }
+
     if (monster.special && hero.specialCd > 0) {
       hero.specialCd -= dt;
     }
@@ -1876,6 +1969,101 @@ function updateHeroes(dt, elapsed) {
 }
 
 function triggerHeroSpecial(hero, monster, stats) {
+  if (monster.special === "slime_flood") {
+    const target = enemies.reduce((best, enemy) => (!best || enemy.progress > best.progress ? enemy : best), null);
+    if (!target) return false;
+    damageArea(target.mesh.position, 3.6, stats.damage * 1.55);
+    let soaked = 0;
+    for (const enemy of enemies) {
+      if (enemy.mesh.position.distanceToSquared(target.mesh.position) > 3.9 * 3.9) continue;
+      enemy.slowFactor = Math.min(enemy.slowFactor, 0.36);
+      enemy.slowTimer = Math.max(enemy.slowTimer, 3.4);
+      soaked += 1;
+    }
+    healChest(3 + soaked * 0.8);
+    spawnFloorMark(target.mesh.position, 0x87ea88, 2.8, 0.8);
+    log("slimey cast slime flood.");
+    return true;
+  }
+
+  if (monster.special === "rapid_brew") {
+    const targets = [...enemies]
+      .sort((a, b) => b.progress - a.progress)
+      .slice(0, 3);
+    if (!targets.length) return false;
+    const multipliers = [1.35, 1.65, 2.05];
+    for (let i = 0; i < targets.length; i += 1) {
+      const t = targets[i];
+      applyDamage(t, stats.damage * multipliers[i]);
+      t.stunTimer = Math.max(t.stunTimer, 0.2 + i * 0.12);
+      spawnPulse(t.mesh.position, 0xffcd7c, 0.32);
+    }
+    hero.cooldown = Math.min(hero.cooldown, 0.06);
+    spawnPulse(hero.mesh.position, 0xffd47f, 0.62);
+    log("mocha cast rapid brew.");
+    return true;
+  }
+
+  if (monster.special === "frost_spike_burst") {
+    const maxDistSq = (stats.range + 2) * (stats.range + 2);
+    const targets = [...enemies]
+      .filter((enemy) => enemy.mesh.position.distanceToSquared(hero.mesh.position) <= maxDistSq)
+      .sort(
+        (a, b) => a.mesh.position.distanceToSquared(hero.mesh.position) - b.mesh.position.distanceToSquared(hero.mesh.position)
+      )
+      .slice(0, 4);
+    if (!targets.length) return false;
+    for (let i = 0; i < targets.length; i += 1) {
+      const t = targets[i];
+      applyDamage(t, stats.damage * (1.45 - i * 0.16));
+      t.slowFactor = Math.min(t.slowFactor, 0.32);
+      t.slowTimer = Math.max(t.slowTimer, 3.6);
+      if (i === 0) t.stunTimer = Math.max(t.stunTimer, 0.55);
+      spawnPulse(t.mesh.position, 0x9deeff, 0.36);
+    }
+    spawnFloorMark(hero.mesh.position, 0x97eeff, 2.7, 0.64);
+    log("spikey cast frost spike burst.");
+    return true;
+  }
+
+  if (monster.special === "maul_quake") {
+    const target = enemies.reduce((best, enemy) => (!best || enemy.progress > best.progress ? enemy : best), null);
+    if (!target) return false;
+    damageArea(target.mesh.position, 3.7, stats.damage * 2.15);
+    for (const enemy of enemies) {
+      if (enemy.mesh.position.distanceToSquared(target.mesh.position) > 3.9 * 3.9) continue;
+      enemy.stunTimer = Math.max(enemy.stunTimer, 1.2);
+    }
+    spawnPulse(target.mesh.position, 0xffb07a, 0.68);
+    log("teddy cast maul quake.");
+    return true;
+  }
+
+  if (monster.special === "execution_strike") {
+    const target = enemies.reduce((best, enemy) => (!best || enemy.maxHp > best.maxHp ? enemy : best), null);
+    if (!target) return false;
+    target.armorBreakTimer = Math.max(target.armorBreakTimer, 4.4);
+    target.damageTakenMult = Math.max(target.damageTakenMult, 1.42);
+    applyDamage(target, stats.damage * 4.4);
+    if (target.hp > 0 && target.hp / target.maxHp <= 0.48) {
+      applyDamage(target, target.maxHp * 0.85);
+    }
+    spawnPulse(target.mesh.position, 0xff9b89, 0.5);
+    log("clyde cast execution strike.");
+    return true;
+  }
+
+  if (monster.special === "latte_barrier") {
+    const shieldGain = 16 + stats.damage * 0.72;
+    addChestShield(shieldGain);
+    for (const ally of heroes) {
+      ally.disabledTimer = Math.max(0, ally.disabledTimer - 0.45);
+    }
+    spawnPulse(chestMesh.position, 0xffe0b4, 0.72);
+    log(`cappuccino cast latte barrier (+${Math.round(shieldGain)} shield).`);
+    return true;
+  }
+
   if (monster.special === "global_stun") {
     for (const enemy of enemies) {
       enemy.stunTimer = Math.max(enemy.stunTimer, 1.8);
@@ -1900,9 +2088,29 @@ function triggerHeroSpecial(hero, monster, stats) {
     state.globalSlowTimer = Math.max(state.globalSlowTimer, 3);
     for (const ally of heroes) {
       ally.cooldown *= 0.5;
+      ally.specialCd = Math.max(0, ally.specialCd - 0.8);
     }
     spawnPulse(hero.mesh.position, 0x89e4ff, 0.66);
     log("speedy cast time warp.");
+    return true;
+  }
+
+  if (monster.special === "blizzard_nova") {
+    const targets = [...enemies]
+      .sort((a, b) => b.progress - a.progress)
+      .slice(0, 6);
+    if (!targets.length) return false;
+    state.globalSlowTimer = Math.max(state.globalSlowTimer, 4.8);
+    for (let i = 0; i < targets.length; i += 1) {
+      const t = targets[i];
+      applyDamage(t, stats.damage * (1.95 - i * 0.12));
+      t.slowFactor = Math.min(t.slowFactor, 0.3);
+      t.slowTimer = Math.max(t.slowTimer, 3.8);
+      t.stunTimer = Math.max(t.stunTimer, 0.45);
+    }
+    spawnPulse(hero.mesh.position, 0xb1f4ff, 0.78);
+    spawnFloorMark(hero.mesh.position, 0xa9efff, 3.2, 0.75);
+    log("frostbite cast blizzard nova.");
     return true;
   }
 
@@ -1985,29 +2193,151 @@ function getHeroStats(hero) {
 
   let damage = monster.baseDamage * rarityScale * starMult * levelMult;
   let fireRate = monster.fireRate * (1 + (entry.level - 1) * 0.035) * Math.sqrt(rarityScale);
-  const range = monster.range + (entry.level - 1) * 0.1 + (rarityScale - 1) * 0.22;
+  let range = monster.range + (entry.level - 1) * 0.1 + (rarityScale - 1) * 0.22;
+  let splash = monster.splash || 0;
+  let slow = monster.slow || 0;
+  let slowDuration = monster.slowDuration || 0;
+  let stunChance = monster.stunChance || 0;
+  let stunDuration = monster.stunDuration || 0;
+  let chainJumps = monster.chainJumps || 0;
+  let chainFalloff = monster.chainFalloff || 0.72;
+  let executeThreshold = monster.executeThreshold || 0;
+  let burnDps = monster.burnDps || 0;
+  let goldStealChance = monster.goldStealChance || 0;
+  let critChance = 0;
+  let critMult = 1.75;
+  let bonusVsStunned = 0;
+  let armorBreak = 0;
+  let armorBreakDuration = 0;
+  let chestHealOnHit = 0;
+  let chestShieldOnStun = 0;
+  let tributeChance = 0;
+  let tributeGold = 0;
+  let bossBonus = 0;
 
   const buffs = getAdjacencyBuffs(hero.slotIndex);
   damage *= 1 + buffs.damage;
   fireRate *= 1 + buffs.speed;
 
+  const adjacentAllies = countAdjacentHeroes(hero.slotIndex);
+  switch (monster.passive) {
+    case "ooze_regen":
+      chestHealOnHit = 0.6 + entry.level * 0.2 + entry.stars * 0.45;
+      break;
+    case "espresso_crit":
+      critChance = Math.min(0.7, 0.24 + entry.stars * 0.08 + entry.level * 0.004);
+      critMult = 1.95 + (entry.stars - 1) * 0.18;
+      fireRate *= 1.1;
+      break;
+    case "glacier_venom":
+      slow = slow > 0 ? Math.min(slow, 0.55) : 0.58;
+      slowDuration += 1.2;
+      burnDps = Math.max(burnDps, damage * 0.14);
+      chainJumps = Math.max(chainJumps, 1);
+      break;
+    case "pack_hunter":
+      bonusVsStunned = 0.42 + (entry.stars - 1) * 0.12;
+      splash = Math.max(splash, 2.9);
+      break;
+    case "armor_break":
+      armorBreak = 0.18 + (entry.stars - 1) * 0.06;
+      armorBreakDuration = 3.3;
+      bossBonus = 0.18;
+      break;
+    case "barista_focus":
+      stunChance = Math.min(0.85, stunChance + 0.26);
+      stunDuration += 0.65;
+      chestShieldOnStun = 3.5 + entry.level * 0.35;
+      break;
+    case "divine_command":
+      damage *= 1 + adjacentAllies * 0.13;
+      fireRate *= 1 + adjacentAllies * 0.08;
+      range += adjacentAllies * 0.15;
+      break;
+    case "hyperflow":
+      fireRate *= 1.33;
+      critChance += 0.12;
+      critMult = Math.max(critMult, 1.7);
+      break;
+    case "permafrost":
+      slow = slow > 0 ? Math.min(slow, 0.38) : 0.42;
+      slowDuration += 1.6;
+      chainJumps = Math.max(chainJumps, 4);
+      chainFalloff = Math.max(chainFalloff, 0.82);
+      damage *= 1.08;
+      break;
+    case "royal_tribute":
+      tributeChance = 0.2 + (entry.stars - 1) * 0.08;
+      tributeGold = 3 + entry.level * 0.4;
+      range += 0.4;
+      break;
+    case "solar_burn":
+      burnDps = Math.max(burnDps, damage * 0.52);
+      splash = Math.max(splash, 4.2);
+      break;
+    case "apex_predator":
+      executeThreshold = Math.max(executeThreshold, 0.36 + (entry.stars - 1) * 0.05);
+      damage *= 1.14;
+      bossBonus = Math.max(bossBonus, 0.22);
+      break;
+    case "high_plunder":
+      goldStealChance = Math.min(0.95, Math.max(goldStealChance, 0.42 + (entry.stars - 1) * 0.08));
+      critChance += 0.1;
+      critMult = Math.max(critMult, 1.85);
+      break;
+    case "alpha_howl":
+      damage *= 1.16;
+      fireRate *= 1.08;
+      bonusVsStunned += 0.2;
+      break;
+    default:
+      break;
+  }
+
   return {
     damage,
     attackDelay: 1 / Math.max(0.2, fireRate),
     range,
-    splash: monster.splash || 0,
-    slow: monster.slow || 0,
-    slowDuration: monster.slowDuration || 0,
-    stunChance: monster.stunChance || 0,
-    stunDuration: monster.stunDuration || 0,
+    splash,
+    slow,
+    slowDuration,
+    stunChance,
+    stunDuration,
     tripleHit: monster.tripleHit || false,
-    chainJumps: monster.chainJumps || 0,
-    chainFalloff: monster.chainFalloff || 0.72,
-    executeThreshold: monster.executeThreshold || 0,
-    burnDps: monster.burnDps || 0,
-    goldStealChance: monster.goldStealChance || 0,
+    chainJumps,
+    chainFalloff,
+    executeThreshold,
+    burnDps,
+    goldStealChance,
+    critChance,
+    critMult,
+    bonusVsStunned,
+    armorBreak,
+    armorBreakDuration,
+    chestHealOnHit,
+    chestShieldOnStun,
+    tributeChance,
+    tributeGold,
+    bossBonus,
     projectileColor: monster.projectileColor
   };
+}
+
+function countAdjacentHeroes(slotIndex) {
+  const slot = HERO_SLOTS[slotIndex];
+  let count = 0;
+
+  for (let dr = -1; dr <= 1; dr += 1) {
+    for (let dc = -1; dc <= 1; dc += 1) {
+      if (dr === 0 && dc === 0) continue;
+      const key = `${slot.row + dr},${slot.col + dc}`;
+      const adjIndex = SLOT_GRID_LOOKUP.get(key);
+      if (adjIndex === undefined) continue;
+      if (slotOccupants[adjIndex]) count += 1;
+    }
+  }
+
+  return count;
 }
 
 function getAdjacencyBuffs(slotIndex) {
@@ -2059,17 +2389,22 @@ function fireHero(hero, target, stats) {
   const origin = hero.mesh.position.clone();
   origin.y += 2.4;
 
+  if (stats.armorBreak > 0) {
+    applyArmorBreak(target, stats);
+  }
+
   if (stats.tripleHit) {
-    applyDamage(target, stats.damage * 0.52);
-    applyDamage(target, stats.damage * 0.62);
-    applyDamage(target, stats.damage * 0.86);
+    applyDamage(target, rollHeroDamage(target, stats, stats.damage * 0.52));
+    applyDamage(target, rollHeroDamage(target, stats, stats.damage * 0.62));
+    applyDamage(target, rollHeroDamage(target, stats, stats.damage * 0.86));
     spawnProjectile(origin, target.mesh.position, stats.projectileColor);
   } else {
+    const shotDamage = rollHeroDamage(target, stats, stats.damage);
     if (stats.splash > 0) {
-      damageArea(target.mesh.position, stats.splash, stats.damage);
+      damageArea(target.mesh.position, stats.splash, shotDamage);
       spawnProjectile(origin, target.mesh.position, stats.projectileColor);
     } else {
-      applyDamage(target, stats.damage);
+      applyDamage(target, shotDamage);
       spawnProjectile(origin, target.mesh.position, stats.projectileColor);
     }
   }
@@ -2081,6 +2416,9 @@ function fireHero(hero, target, stats) {
 
   if (stats.stunChance > 0 && Math.random() < stats.stunChance) {
     target.stunTimer = Math.max(target.stunTimer, stats.stunDuration);
+    if (stats.chestShieldOnStun > 0) {
+      addChestShield(stats.chestShieldOnStun);
+    }
   }
 
   if (stats.chainJumps > 0) {
@@ -2103,9 +2441,48 @@ function fireHero(hero, target, stats) {
     spawnPulse(hero.mesh.position, 0xff9bf0, 0.45);
   }
 
+  if (stats.tributeChance > 0 && Math.random() < stats.tributeChance) {
+    const tributeGold = Math.max(3, Math.round(stats.tributeGold + Math.random() * 3));
+    state.gold += tributeGold;
+    spawnPulse(hero.mesh.position, 0xc9a5ff, 0.42);
+  }
+
+  if (stats.chestHealOnHit > 0) {
+    healChest(stats.chestHealOnHit);
+  }
+
   if (monster.name === "mighty" && Math.random() < 0.25) {
     damageArea(target.mesh.position, 2.2, stats.damage * 1.35);
     spawnPulse(target.mesh.position, 0xffe993, 0.45);
+  }
+}
+
+function rollHeroDamage(target, stats, baseDamage) {
+  let damage = baseDamage;
+  let crit = false;
+  if (stats.critChance > 0 && Math.random() < stats.critChance) {
+    damage *= stats.critMult;
+    crit = true;
+  }
+  if (stats.bonusVsStunned > 0 && target.stunTimer > 0) {
+    damage *= 1 + stats.bonusVsStunned;
+  }
+  if (stats.bossBonus > 0 && target.isBoss) {
+    damage *= 1 + stats.bossBonus;
+  }
+  if (crit) {
+    spawnPulse(target.mesh.position, 0xfff1a8, 0.28);
+  }
+  return damage;
+}
+
+function applyArmorBreak(target, stats) {
+  if (!stats.armorBreak || stats.armorBreak <= 0) return;
+  const hadBreak = target.armorBreakTimer > 0;
+  target.armorBreakTimer = Math.max(target.armorBreakTimer, stats.armorBreakDuration || 2.8);
+  target.damageTakenMult = Math.max(target.damageTakenMult || 1, 1 + Math.min(0.95, stats.armorBreak));
+  if (!hadBreak) {
+    spawnPulse(target.mesh.position, 0xff8d7f, 0.25);
   }
 }
 
@@ -2141,7 +2518,7 @@ function applyChainLightning(initialTarget, jumps, jumpRange, baseDamage, fallof
 }
 
 function applyDamage(enemy, amount) {
-  let dmg = amount;
+  let dmg = amount * (enemy.damageTakenMult || 1);
   if (enemy.shield > 0) {
     const blocked = Math.min(enemy.shield, dmg);
     enemy.shield -= blocked;
@@ -2268,10 +2645,29 @@ function removeEnemy(index, killed) {
   }
 }
 
+function healChest(amount) {
+  if (amount <= 0) return;
+  state.chestHp = Math.min(state.chestHpMax, state.chestHp + amount);
+}
+
+function addChestShield(amount) {
+  if (amount <= 0) return;
+  state.chestShield = Math.min(state.chestHpMax * 3, state.chestShield + amount);
+}
+
 function damageChest(amount) {
-  state.chestHp = Math.max(0, state.chestHp - amount);
+  let pending = amount;
+  if (state.chestShield > 0) {
+    const blocked = Math.min(state.chestShield, pending);
+    state.chestShield -= blocked;
+    pending -= blocked;
+    if (blocked > 0) {
+      spawnPulse(chestMesh.position, 0xffe0ac, 0.38);
+    }
+  }
+  state.chestHp = Math.max(0, state.chestHp - pending);
   state.chestHitFlash = 0.24;
-  if (amount > 0) log(`chest hit for ${amount}.`);
+  if (pending > 0) log(`chest hit for ${Math.ceil(pending)}.`);
   if (state.chestHp <= 0) triggerGameOver();
 }
 
@@ -2469,6 +2865,7 @@ function restartRun() {
   state.orbs = 120;
   state.stones = 0;
   state.chestHp = 120;
+  state.chestShield = 0;
   state.wave = 1;
   state.waveActive = false;
   state.waveQueue.length = 0;
@@ -2513,7 +2910,7 @@ function updateAllUi() {
   ui.gold.textContent = Math.floor(state.gold).toString();
   ui.orbs.textContent = Math.floor(state.orbs).toString();
   ui.stones.textContent = Math.floor(state.stones).toString();
-  ui.chest.textContent = `${Math.ceil(state.chestHp)} / ${state.chestHpMax}`;
+  ui.chest.textContent = `${Math.ceil(state.chestHp)} / ${state.chestHpMax}${state.chestShield > 0 ? ` +${Math.ceil(state.chestShield)} shield` : ""}`;
   ui.wave.textContent = `${state.wave}${state.waveActive ? " (live)" : ""}`;
   ui.enemies.textContent = `${enemies.length}${state.waveQueue.length > 0 ? ` + ${state.waveQueue.length}` : ""}`;
 
@@ -2565,10 +2962,13 @@ function updateSelectedHeroPanel() {
   const monster = monsterCatalog[monsterId];
   const stats = getHeroStats(hero);
   const slot = HERO_SLOTS[hero.slotIndex];
+  const specialLabel = getSpecialLabel(monster.special);
+  const passiveLabel = getPassiveLabel(monster.passive);
 
   const nextCost = entry.level >= 30 ? "max" : upgradeCost(monsterId);
   ui.towerInfo.textContent = `${monster.name} | ${monster.rarity} | stars ${entry.stars} | lv ${entry.level}\n` +
     `dmg ${stats.damage.toFixed(0)} | rng ${stats.range.toFixed(1)} | row ${slot.row + 1} col ${slot.col + 1}\n` +
+    `ability ${specialLabel} | passive ${passiveLabel}\n` +
     `next upgrade ${nextCost}`;
 
   ui.upgradeBtn.disabled = entry.level >= 30;
@@ -2629,6 +3029,7 @@ function saveGame() {
     orbs: state.orbs,
     stones: state.stones,
     chestHp: state.chestHp,
+    chestShield: state.chestShield,
     wave: state.wave,
     collection,
     slotOccupants,
@@ -2656,6 +3057,7 @@ function loadGame() {
   state.orbs = typeof parsed.orbs === "number" ? Math.max(0, parsed.orbs) : state.orbs;
   state.stones = typeof parsed.stones === "number" ? Math.max(0, parsed.stones) : state.stones;
   state.chestHp = typeof parsed.chestHp === "number" ? Math.max(1, Math.min(state.chestHpMax, parsed.chestHp)) : state.chestHp;
+  state.chestShield = typeof parsed.chestShield === "number" ? Math.max(0, Math.min(state.chestHpMax * 3, parsed.chestShield)) : state.chestShield;
   state.wave = typeof parsed.wave === "number" ? Math.max(1, Math.floor(parsed.wave)) : state.wave;
 
   if (parsed.collection && typeof parsed.collection === "object") {
