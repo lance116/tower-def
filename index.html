@@ -3,10 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Summoner-Style Idle TD</title>
+    <title>idle summoner td</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="styles.css" />
     <script type="importmap">
       {
@@ -20,38 +23,57 @@
     <div id="app">
       <canvas id="gameCanvas"></canvas>
 
-      <aside id="hud">
-        <h1>Idle Summoner TD</h1>
+      <header id="topHud">
+        <div class="stat-pill"><span>gold</span><strong id="goldValue">0</strong></div>
+        <div class="stat-pill"><span>orbs</span><strong id="orbValue">0</strong></div>
+        <div class="stat-pill"><span>event stones</span><strong id="stoneValue">0</strong></div>
+        <div class="stat-pill"><span>chest</span><strong id="chestValue">0</strong></div>
+        <div class="stat-pill"><span>wave</span><strong id="waveValue">0</strong></div>
+        <div class="stat-pill"><span>enemies</span><strong id="enemyValue">0</strong></div>
+      </header>
 
-        <section class="stats">
-          <div><span>Gold</span><strong id="goldValue">0</strong></div>
-          <div><span>Chest HP</span><strong id="chestValue">0</strong></div>
-          <div><span>Wave</span><strong id="waveValue">0</strong></div>
-          <div><span>Enemies</span><strong id="enemyValue">0</strong></div>
-        </section>
+      <section id="leftPanel" class="panel">
+        <h2>battle controls</h2>
+        <div class="btn-grid">
+          <button id="startWaveBtn">start wave</button>
+          <button id="speedBtn">speed x1</button>
+          <button id="fireballBtn">fireball</button>
+          <button id="freezeBtn">deep freeze</button>
+          <button id="repairBtn">repair stone</button>
+        </div>
 
-        <section class="actions">
-          <button id="summonBtn">Summon Tower (50)</button>
-          <button id="startWaveBtn">Start Wave</button>
-          <button id="speedBtn">Speed x1</button>
-          <button id="fireballBtn">Fireball (80)</button>
-          <button id="freezeBtn">Freeze (120)</button>
-        </section>
+        <h2>summon portal</h2>
+        <div class="btn-grid">
+          <button id="summonBtn">summon x1 (10 orbs)</button>
+          <button id="summon10Btn">summon x10 (100 orbs)</button>
+          <button id="specialSummonBtn">event summon</button>
+        </div>
 
-        <section class="tower-panel">
-          <h2>Selected Tower</h2>
-          <p id="towerInfo">None</p>
-          <button id="upgradeBtn" disabled>Upgrade</button>
-          <button id="sellBtn" disabled>Sell</button>
-        </section>
+        <p id="eventText">event monster: hellhound</p>
+        <p id="logText">summon monsters and place up to 9 heroes.</p>
+      </section>
 
-        <p id="logText">Defend the chest. Summon, place, and scale.</p>
-      </aside>
+      <section id="rightPanel" class="panel">
+        <h2>selected hero</h2>
+        <p id="towerInfo">none</p>
+        <div class="btn-grid">
+          <button id="upgradeBtn" disabled>level up</button>
+          <button id="sellBtn" disabled>remove</button>
+        </div>
+        <p id="hintText">click a roster card, then click a slot to place it.</p>
+      </section>
+
+      <section id="rosterPanel" class="panel">
+        <h2>monster roster</h2>
+        <div id="heroRoster"></div>
+      </section>
 
       <div id="gameOver" class="hidden">
-        <h2>Chest Destroyed</h2>
-        <p>Your defense collapsed.</p>
-        <button id="restartBtn">Restart Run</button>
+        <div class="game-over-card">
+          <h2>loot lost</h2>
+          <p>the king reclaimed your chest.</p>
+          <button id="restartBtn">restart run</button>
+        </div>
       </div>
     </div>
 
