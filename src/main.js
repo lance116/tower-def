@@ -46,7 +46,7 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xafe9ff);
 scene.fog = new THREE.Fog(0xafe9ff, 65, 210);
 
-const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 500);
+const camera = new THREE.PerspectiveCamera(56, window.innerWidth / window.innerHeight, 0.1, 500);
 
 scene.add(new THREE.HemisphereLight(0xffffff, 0x8ed66f, 1.35));
 const sun = new THREE.DirectionalLight(0xfff4c4, 1.15);
@@ -657,19 +657,19 @@ function buildBoard() {
 
 function wireUi() {
   ui.toggleStatsBtn.addEventListener("click", () => {
-    panelState.stats = !panelState.stats;
+    togglePanel("stats");
     applyPanelVisibility();
   });
   ui.toggleControlsBtn.addEventListener("click", () => {
-    panelState.controls = !panelState.controls;
+    togglePanel("controls");
     applyPanelVisibility();
   });
   ui.toggleHeroBtn.addEventListener("click", () => {
-    panelState.hero = !panelState.hero;
+    togglePanel("hero");
     applyPanelVisibility();
   });
   ui.toggleInventoryBtn.addEventListener("click", () => {
-    panelState.inventory = !panelState.inventory;
+    togglePanel("inventory");
     applyPanelVisibility();
   });
 
@@ -721,6 +721,21 @@ function wireUi() {
   window.addEventListener("beforeunload", saveGame);
 }
 
+function togglePanel(name) {
+  const wasOpen = panelState[name];
+
+  if (name === "inventory") {
+    panelState.inventory = !wasOpen;
+    return;
+  }
+
+  // Keep top HUD compact: only one of stats/controls/hero open at once.
+  panelState.stats = false;
+  panelState.controls = false;
+  panelState.hero = false;
+  panelState[name] = !wasOpen;
+}
+
 function applyPanelVisibility() {
   ui.topHud.classList.toggle("is-hidden", !panelState.stats);
   ui.leftPanel.classList.toggle("is-hidden", !panelState.controls);
@@ -737,13 +752,13 @@ function updateCameraFraming() {
   // Keep a close angled view so sprites/board are readable on horizontal screens.
   const aspect = window.innerWidth / Math.max(1, window.innerHeight);
   if (aspect < 0.95) {
-    camera.position.set(0, 30, 48);
+    camera.position.set(0, 21, 36);
     camera.lookAt(0, 0, 3);
   } else if (aspect < 1.45) {
-    camera.position.set(0, 26, 42);
+    camera.position.set(0, 18, 32);
     camera.lookAt(0, 0, 1);
   } else {
-    camera.position.set(0, 22, 36);
+    camera.position.set(0, 15, 28);
     camera.lookAt(0, 0, 0);
   }
 }

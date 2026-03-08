@@ -55,14 +55,14 @@ body {
   gap: 6px;
   flex-wrap: wrap;
   justify-content: center;
-  width: min(520px, calc(100vw - 20px));
+  width: min(460px, calc(100vw - 20px));
 }
 
 .dock-btn {
   border: 2px solid #7a5632;
   border-radius: 12px;
-  padding: 8px 10px;
-  font: 800 0.92rem/1 "Baloo 2", sans-serif;
+  padding: 7px 9px;
+  font: 800 0.86rem/1 "Baloo 2", sans-serif;
   color: #fff8eb;
   background: linear-gradient(180deg, #67bd53, #4fa13e);
 }
@@ -82,29 +82,29 @@ body {
 
 #topHud {
   position: absolute;
-  top: 58px;
+  top: 52px;
   left: 50%;
   transform: translateX(-50%);
   display: grid;
-  grid-template-columns: repeat(6, minmax(110px, 1fr));
-  gap: 8px;
-  width: min(960px, calc(100vw - 24px));
+  grid-template-columns: repeat(6, minmax(92px, 1fr));
+  gap: 6px;
+  width: min(880px, calc(100vw - 18px));
   z-index: 8;
 }
 
 .stat-pill {
   border: 2px solid #ac7a43;
-  border-radius: 14px;
+  border-radius: 12px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 242, 208, 0.95));
   box-shadow: 0 7px 20px rgba(67, 45, 19, 0.15);
-  padding: 7px 10px;
+  padding: 5px 8px;
   display: flex;
   flex-direction: column;
-  min-height: 54px;
+  min-height: 46px;
 }
 
 .stat-pill span {
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 800;
   color: var(--muted);
   text-transform: uppercase;
@@ -113,7 +113,7 @@ body {
 
 .stat-pill strong {
   margin-top: 2px;
-  font-size: 1.24rem;
+  font-size: 0.98rem;
   line-height: 1;
   font-weight: 800;
   font-family: "Baloo 2", sans-serif;
@@ -123,28 +123,28 @@ body {
 .panel {
   position: absolute;
   border: 3px solid var(--panel-border);
-  border-radius: 22px;
-  background: linear-gradient(180deg, #fffef8, var(--panel-bg));
-  box-shadow: 0 18px 42px var(--panel-shadow);
-  padding: 12px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 254, 248, 0.94), rgba(255, 250, 235, 0.9));
+  box-shadow: 0 10px 28px var(--panel-shadow);
+  padding: 9px;
   z-index: 7;
 }
 
 #leftPanel {
-  bottom: 172px;
+  top: 108px;
   left: 50%;
   transform: translateX(-50%);
-  width: min(1020px, calc(100vw - 20px));
-  max-height: 30vh;
+  width: min(900px, calc(100vw - 20px));
+  max-height: 25vh;
   overflow: auto;
 }
 
 #rightPanel {
-  top: 130px;
+  top: 108px;
   left: 50%;
   transform: translateX(-50%);
-  width: min(760px, calc(100vw - 20px));
-  max-height: 23vh;
+  width: min(680px, calc(100vw - 20px));
+  max-height: 22vh;
   overflow: auto;
 }
 
@@ -152,13 +152,15 @@ body {
   left: 50%;
   transform: translateX(-50%);
   bottom: 10px;
-  width: min(1280px, calc(100vw - 20px));
-  min-height: 148px;
+  width: min(1240px, calc(100vw - 14px));
+  min-height: 118px;
+  max-height: 180px;
+  overflow: hidden;
 }
 
 h2 {
   margin: 0 0 8px;
-  font: 800 1.45rem/1 "Baloo 2", sans-serif;
+  font: 800 0.96rem/1 "Baloo 2", sans-serif;
   color: #744726;
   text-transform: lowercase;
 }
@@ -166,15 +168,15 @@ h2 {
 .btn-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 6px;
 }
 
 button {
   border: 2px solid #875d33;
   border-radius: 14px;
-  padding: 10px;
-  font: 800 1rem/1 "Baloo 2", sans-serif;
+  padding: 7px;
+  font: 800 0.83rem/1 "Baloo 2", sans-serif;
   color: #fff9ec;
   background: linear-gradient(180deg, var(--green-a), var(--green-b));
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
@@ -220,31 +222,31 @@ button:disabled {
 #eventText,
 #hintText,
 #towerInfo {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   color: #5f4d3d;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.82rem;
 }
 
 #towerInfo {
-  min-height: 84px;
+  min-height: 52px;
 }
 
 #heroRoster {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(132px, 132px);
-  gap: 8px;
+  grid-auto-columns: minmax(118px, 118px);
+  gap: 6px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding-bottom: 3px;
 }
 
 .roster-card {
   border: 2px solid #b88d56;
   border-radius: 14px;
   background: linear-gradient(180deg, #fffdf8, #fdeecf);
-  padding: 7px;
-  min-height: 108px;
+  padding: 6px;
+  min-height: 92px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -298,7 +300,7 @@ button:disabled {
 }
 
 .roster-name {
-  font: 800 0.9rem/1 "Baloo 2", sans-serif;
+  font: 800 0.82rem/1 "Baloo 2", sans-serif;
   color: #5e3c1f;
   white-space: nowrap;
   overflow: hidden;
@@ -308,7 +310,7 @@ button:disabled {
 .roster-rarity,
 .roster-level,
 .roster-stars {
-  font-size: 0.74rem;
+  font-size: 0.66rem;
   font-weight: 800;
   color: #7b6348;
 }
@@ -319,7 +321,7 @@ button:disabled {
   background: rgba(102, 179, 255, 0.18);
   border: 1px solid rgba(71, 141, 211, 0.45);
   color: #275588;
-  font-size: 0.74rem;
+  font-size: 0.66rem;
   font-weight: 800;
   text-align: center;
   padding: 2px 4px;
@@ -368,19 +370,19 @@ button:disabled {
 
 @media (max-width: 900px) {
   #leftPanel {
-    bottom: 168px;
+    top: 104px;
     width: calc(100vw - 16px);
-    max-height: 28vh;
+    max-height: 24vh;
   }
 
   #rightPanel {
-    top: 124px;
+    top: 104px;
     width: calc(100vw - 16px);
-    max-height: 20vh;
+    max-height: 22vh;
   }
 
   #rosterPanel {
-    min-height: 150px;
+    min-height: 116px;
   }
 
   .btn-grid {
@@ -409,15 +411,15 @@ button:disabled {
   }
 
   #leftPanel {
-    bottom: 166px;
+    top: 100px;
     width: calc(100vw - 12px);
-    max-height: 26vh;
+    max-height: 23vh;
   }
 
   #rightPanel {
-    top: 112px;
+    top: 100px;
     width: calc(100vw - 12px);
-    max-height: 18vh;
+    max-height: 20vh;
   }
 
   #rosterPanel {
