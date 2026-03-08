@@ -64,6 +64,18 @@ body {
   width: min(520px, calc(100vw - 20px));
 }
 
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.panel-head h2 {
+  margin: 0;
+}
+
 .dock-btn {
   border: 2px solid #7a5632;
   border-radius: 14px;
@@ -89,14 +101,23 @@ body {
 
 #topHud {
   position: absolute;
-  top: 62px;
+  top: 72px;
   left: 50%;
   transform: translateX(-50%);
+  width: min(980px, calc(100vw - 18px));
+  z-index: 8;
+  border: 3px solid var(--panel-border);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 254, 248, 0.96), rgba(255, 250, 235, 0.94));
+  box-shadow: 0 12px 30px var(--panel-shadow);
+  backdrop-filter: blur(4px);
+  padding: 10px;
+}
+
+.top-hud-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(92px, 1fr));
   gap: 8px;
-  width: min(880px, calc(100vw - 18px));
-  z-index: 8;
 }
 
 .stat-pill {
@@ -160,14 +181,17 @@ body {
 }
 
 #rosterPanel {
+  top: 53%;
   left: 50%;
-  transform: translateX(-50%);
-  bottom: 10px;
-  width: min(1280px, calc(100vw - 14px));
-  height: var(--inventory-dock-h);
+  transform: translate(-50%, -50%);
+  width: min(1360px, calc(100vw - 14px));
+  height: min(82vh, 840px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, rgba(52, 45, 35, 0.93), rgba(43, 37, 29, 0.9));
+  border-color: #9e8057;
 }
 
 h2 {
@@ -204,6 +228,21 @@ button:hover:enabled {
 button:disabled {
   opacity: 0.46;
   cursor: not-allowed;
+}
+
+button.panel-close {
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  border-radius: 999px;
+  border: 2px solid #885c32;
+  background: linear-gradient(180deg, #ffd7a2, #ed9a47);
+  color: #4f2b10;
+  font: 800 0.95rem/1 "Baloo 2", sans-serif;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  text-shadow: none;
 }
 
 #fireballBtn {
@@ -413,12 +452,12 @@ button:disabled {
 
 #heroRoster {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
   overflow-y: auto;
   overflow-x: hidden;
-  height: calc(100% - 120px);
-  padding: 2px 4px 4px 0;
+  height: calc(100% - 170px);
+  padding: 2px 6px 6px 0;
 }
 
 .roster-card {
@@ -426,7 +465,7 @@ button:disabled {
   border-radius: 14px;
   background: linear-gradient(180deg, #fffdf8, #fdeecf);
   padding: 8px;
-  min-height: 150px;
+  min-height: 240px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -451,8 +490,8 @@ button:disabled {
 
 .roster-head {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .roster-topline {
@@ -462,31 +501,30 @@ button:disabled {
 }
 
 .roster-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 86px;
+  height: 86px;
+  border-radius: 16px;
   border: 2px solid #8f6f49;
   background: radial-gradient(circle at 30% 30%, #fff6d3, #f5b350);
   flex: 0 0 auto;
-  display: grid;
-  place-items: center;
+  overflow: hidden;
 }
 
-.roster-icon-text {
-  font: 800 0.68rem/1 "Baloo 2", sans-serif;
-  letter-spacing: 0.05em;
-  color: #3e2814;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
+.roster-portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .roster-meta {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 3px;
 }
 
 .roster-name {
-  font: 800 0.9rem/1 "Baloo 2", sans-serif;
+  font: 800 1.04rem/1 "Baloo 2", sans-serif;
   color: #5e3c1f;
   white-space: nowrap;
   overflow: hidden;
@@ -496,7 +534,7 @@ button:disabled {
 .roster-rarity,
 .roster-level,
 .roster-stars {
-  font-size: 0.68rem;
+  font-size: 0.76rem;
   font-weight: 800;
   color: #7b6348;
 }
@@ -510,7 +548,7 @@ button:disabled {
 }
 
 .roster-kit {
-  font-size: 0.62rem;
+  font-size: 0.74rem;
   font-weight: 800;
   color: #496e90;
   display: flex;
@@ -526,7 +564,7 @@ button:disabled {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.56);
   color: #6f4621;
-  font-size: 0.7rem;
+  font-size: 0.82rem;
   font-weight: 800;
   padding: 2px 5px;
   display: flex;
@@ -544,13 +582,13 @@ button:disabled {
 }
 
 .roster-skill-power {
-  font-size: 0.62rem;
+  font-size: 0.73rem;
   font-weight: 800;
   color: #7f5a37;
 }
 
 .roster-power {
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   font-weight: 800;
   color: #5a4837;
 }
@@ -561,7 +599,7 @@ button:disabled {
   background: rgba(102, 179, 255, 0.18);
   border: 1px solid rgba(71, 141, 211, 0.45);
   color: #275588;
-  font-size: 0.68rem;
+  font-size: 0.76rem;
   font-weight: 800;
   text-align: center;
   padding: 2px 4px;
@@ -570,7 +608,7 @@ button:disabled {
 .roster-detail {
   border: 2px solid rgba(165, 117, 63, 0.7);
   border-radius: 12px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 242, 213, 0.95));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 238, 219, 0.96));
   box-shadow: 0 6px 16px rgba(71, 43, 18, 0.14);
   padding: 9px 10px;
   margin-bottom: 10px;
@@ -578,14 +616,14 @@ button:disabled {
 }
 
 .roster-detail-title {
-  font: 800 0.98rem/1.1 "Baloo 2", sans-serif;
+  font: 800 1.08rem/1.1 "Baloo 2", sans-serif;
   color: #663d1d;
   margin-bottom: 5px;
   text-transform: lowercase;
 }
 
 .roster-detail-stats {
-  font-size: 0.78rem;
+  font-size: 0.86rem;
   font-weight: 800;
   color: #5e4a37;
   white-space: normal;
@@ -627,7 +665,7 @@ button:disabled {
 }
 
 @media (max-width: 1160px) {
-  #topHud {
+  .top-hud-grid {
     grid-template-columns: repeat(3, minmax(100px, 1fr));
   }
 
@@ -655,6 +693,7 @@ button:disabled {
 
   #rosterPanel {
     width: calc(100vw - 12px);
+    height: min(84vh, 760px);
   }
 
   .btn-grid {
@@ -682,6 +721,9 @@ button:disabled {
   #topHud {
     top: 54px;
     width: calc(100vw - 12px);
+  }
+
+  .top-hud-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
   }
@@ -700,9 +742,10 @@ button:disabled {
   }
 
   #rosterPanel {
-    bottom: 8px;
+    top: 52%;
     width: calc(100vw - 12px);
     padding: 10px;
+    height: min(86vh, 660px);
   }
 
   h2 {
@@ -715,6 +758,7 @@ button:disabled {
   }
 
   #heroRoster {
-    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    height: calc(100% - 165px);
   }
 }

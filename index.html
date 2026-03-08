@@ -31,16 +31,25 @@
       </nav>
 
       <header id="topHud" class="collapsible-panel is-hidden">
-        <div class="stat-pill"><span>gold</span><strong id="goldValue">0</strong></div>
-        <div class="stat-pill"><span>orbs</span><strong id="orbValue">0</strong></div>
-        <div class="stat-pill"><span>event stones</span><strong id="stoneValue">0</strong></div>
-        <div class="stat-pill"><span>chest</span><strong id="chestValue">0</strong></div>
-        <div class="stat-pill"><span>wave</span><strong id="waveValue">0</strong></div>
-        <div class="stat-pill"><span>enemies</span><strong id="enemyValue">0</strong></div>
+        <div class="panel-head">
+          <h2>run stats</h2>
+          <button id="closeStatsBtn" class="panel-close" aria-label="close stats">x</button>
+        </div>
+        <div class="top-hud-grid">
+          <div class="stat-pill"><span>gold</span><strong id="goldValue">0</strong></div>
+          <div class="stat-pill"><span>orbs</span><strong id="orbValue">0</strong></div>
+          <div class="stat-pill"><span>event stones</span><strong id="stoneValue">0</strong></div>
+          <div class="stat-pill"><span>chest</span><strong id="chestValue">0</strong></div>
+          <div class="stat-pill"><span>wave</span><strong id="waveValue">0</strong></div>
+          <div class="stat-pill"><span>enemies</span><strong id="enemyValue">0</strong></div>
+        </div>
       </header>
 
       <section id="leftPanel" class="panel collapsible-panel is-hidden">
-        <h2>battle controls</h2>
+        <div class="panel-head">
+          <h2>battle controls</h2>
+          <button id="closeControlsBtn" class="panel-close" aria-label="close controls">x</button>
+        </div>
         <div class="btn-grid">
           <button id="startWaveBtn">start wave</button>
           <button id="speedBtn">speed x1</button>
@@ -61,7 +70,10 @@
       </section>
 
       <section id="rightPanel" class="panel collapsible-panel is-hidden">
-        <h2>selected hero</h2>
+        <div class="panel-head">
+          <h2>selected hero</h2>
+          <button id="closeHeroBtn" class="panel-close" aria-label="close hero">x</button>
+        </div>
         <p id="towerInfo">none</p>
         <div class="btn-grid">
           <button id="upgradeBtn" disabled>level up</button>
@@ -71,7 +83,10 @@
       </section>
 
       <section id="rosterPanel" class="panel collapsible-panel is-hidden">
-        <h2>monster inventory</h2>
+        <div class="panel-head">
+          <h2>monster inventory</h2>
+          <button id="closeInventoryBtn" class="panel-close" aria-label="close inventory">x</button>
+        </div>
         <div id="rosterDetail" class="roster-detail">
           <div id="rosterDetailTitle" class="roster-detail-title">selected: none</div>
           <div id="rosterDetailStats" class="roster-detail-stats">click a hero card to inspect stats, ability, and passive.</div>

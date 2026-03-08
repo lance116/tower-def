@@ -7,6 +7,10 @@ const ui = {
   leftPanel: document.getElementById("leftPanel"),
   rightPanel: document.getElementById("rightPanel"),
   rosterPanel: document.getElementById("rosterPanel"),
+  closeStatsBtn: document.getElementById("closeStatsBtn"),
+  closeControlsBtn: document.getElementById("closeControlsBtn"),
+  closeHeroBtn: document.getElementById("closeHeroBtn"),
+  closeInventoryBtn: document.getElementById("closeInventoryBtn"),
   toggleStatsBtn: document.getElementById("toggleStatsBtn"),
   toggleControlsBtn: document.getElementById("toggleControlsBtn"),
   toggleHeroBtn: document.getElementById("toggleHeroBtn"),
@@ -613,6 +617,7 @@ const floorMarks = [];
 
 const toonGradientMap = createToonGradientTexture();
 const spriteCache = new Map();
+const monsterPortraitCache = new Map();
 
 const pathTileSet = new Set(PATH_TILES.map((tile) => `${tile.x},${tile.y}`));
 const pathWorld = PATH_TILES.map((tile) => tileToWorld(tile.x, tile.y, 0.84));
@@ -654,6 +659,40 @@ function tileToWorld(x, y, yOffset = 0) {
 
 function getMonsterVisual(monsterId) {
   return MONSTER_VISUALS[monsterId] || { silhouette: "blob", symbol: "orb", badge: monsterId.slice(0, 2) };
+}
+
+function getMonsterPortraitUri(monsterId) {
+  if (monsterPortraitCache.has(monsterId)) return monsterPortraitCache.get(monsterId);
+
+  let uri = "";
+  try {
+    const tex = createMonsterSpriteTexture(monsterId);
+    const image = tex?.image;
+    if (image && typeof image.toDataURL === "function") {
+      uri = image.toDataURL("image/png");
+    }
+  } catch {
+    // icon fallback handled below
+  }
+
+  if (!uri) {
+    const monster = monsterCatalog[monsterId];
+    const visual = getMonsterVisual(monsterId);
+    const c1 = new THREE.Color(monster?.color || 0x8ec8ff).getHexString();
+    const c2 = new THREE.Color(monster?.accent || 0xffffff).getHexString();
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+      <defs><radialGradient id="g" cx="32%" cy="28%" r="78%">
+        <stop offset="0%" stop-color="#${c2}"/><stop offset="100%" stop-color="#${c1}"/>
+      </radialGradient></defs>
+      <rect x="4" y="4" width="120" height="120" rx="22" fill="url(#g)"/>
+      <circle cx="64" cy="64" r="46" fill="rgba(255,255,255,0.20)"/>
+      <text x="64" y="73" text-anchor="middle" font-size="34" font-weight="800" fill="#2f1d12" font-family="Nunito, sans-serif">${visual.badge.toUpperCase()}</text>
+    </svg>`;
+    uri = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  }
+
+  monsterPortraitCache.set(monsterId, uri);
+  return uri;
 }
 
 function getSpecialLabel(specialId) {
@@ -937,6 +976,22 @@ function wireUi() {
     togglePanel("inventory");
     applyPanelVisibility();
   });
+  ui.closeStatsBtn.addEventListener("click", () => {
+    panelState.stats = false;
+    applyPanelVisibility();
+  });
+  ui.closeControlsBtn.addEventListener("click", () => {
+    panelState.controls = false;
+    applyPanelVisibility();
+  });
+  ui.closeHeroBtn.addEventListener("click", () => {
+    panelState.hero = false;
+    applyPanelVisibility();
+  });
+  ui.closeInventoryBtn.addEventListener("click", () => {
+    panelState.inventory = false;
+    applyPanelVisibility();
+  });
 
   ui.startWaveBtn.addEventListener("click", () => {
     if (state.runOver || state.waveActive) return;
@@ -988,16 +1043,10 @@ function wireUi() {
 
 function togglePanel(name) {
   const wasOpen = panelState[name];
-
-  if (name === "inventory") {
-    panelState.inventory = !wasOpen;
-    return;
-  }
-
-  // Keep top HUD compact: only one of stats/controls/hero open at once.
   panelState.stats = false;
   panelState.controls = false;
   panelState.hero = false;
+  panelState.inventory = false;
   panelState[name] = !wasOpen;
 }
 
@@ -1047,7 +1096,9 @@ function onRosterClick(event) {
 
   state.selectedMonsterId = monsterId;
   state.selectedSlotIndex = heroByMonster.has(monsterId) ? heroByMonster.get(monsterId).slotIndex : null;
-  panelState.hero = true;
+  panelState.stats = false;
+  panelState.controls = false;
+  panelState.hero = false;
   panelState.inventory = true;
   applyPanelVisibility();
 
@@ -1121,7 +1172,10 @@ function handleSlotClick(slotIndex) {
   if (occupant) {
     state.selectedMonsterId = occupant;
     state.selectedSlotIndex = slotIndex;
+    panelState.stats = false;
+    panelState.controls = false;
     panelState.hero = true;
+    panelState.inventory = false;
     applyPanelVisibility();
     log(`${monsterCatalog[occupant].name} selected.`);
   } else {
@@ -3269,7 +3323,6 @@ function renderRoster() {
 
   for (const id of ids) {
     const monster = monsterCatalog[id];
-    const visual = getMonsterVisual(id);
     const entry = collection[id];
     const selected = state.selectedMonsterId === id;
     const placedHero = heroByMonster.get(id);
@@ -3281,9 +3334,7 @@ function renderRoster() {
     const specialIcon = getSkillIconUri("special", monster.special);
     const passiveIcon = getSkillIconUri("passive", monster.passive);
     const specialTag = previewStats ? getSpecialPowerText(monster, previewStats).split(",")[0] : "no data";
-
-    const color = `#${new THREE.Color(monster.color).getHexString()}`;
-    const accent = `#${new THREE.Color(monster.accent).getHexString()}`;
+    const portrait = getMonsterPortraitUri(id);
 
     cards.push(`
       <div class="roster-card ${entry.owned ? "" : "locked"} ${selected ? "selected" : ""}" data-monster-id="${id}">
@@ -3292,8 +3343,8 @@ function renderRoster() {
           <div class="roster-stars">stars ${entry.stars}</div>
         </div>
         <div class="roster-head">
-          <div class="roster-icon" style="background: radial-gradient(circle at 30% 30%, ${accent}, ${color});">
-            <span class="roster-icon-text">${visual.badge.toUpperCase()}</span>
+          <div class="roster-icon">
+            <img class="roster-portrait" src="${portrait}" alt="${monster.name} portrait" />
           </div>
           <div class="roster-meta">
             <div class="roster-name">${monster.name}</div>
