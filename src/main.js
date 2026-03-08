@@ -30,6 +30,8 @@ const ui = {
   hint: document.getElementById("hintText"),
   upgradeBtn: document.getElementById("upgradeBtn"),
   removeBtn: document.getElementById("sellBtn"),
+  rosterDetailTitle: document.getElementById("rosterDetailTitle"),
+  rosterDetailStats: document.getElementById("rosterDetailStats"),
   roster: document.getElementById("heroRoster"),
   gameOver: document.getElementById("gameOver"),
   restartBtn: document.getElementById("restartBtn")
@@ -628,6 +630,46 @@ function getPassiveLabel(passiveId) {
   return PASSIVE_LABELS[passiveId] || "none";
 }
 
+function getSpecialDescription(specialId) {
+  switch (specialId) {
+    case "slime_flood": return "aoe splash wave that slows enemies and heals the chest.";
+    case "rapid_brew": return "rapid multi-hit burst on front enemies.";
+    case "frost_spike_burst": return "multi-target freeze burst with heavy slow.";
+    case "maul_quake": return "quake slam that stuns enemies in an area.";
+    case "execution_strike": return "single-target execute with armor break.";
+    case "latte_barrier": return "grants chest shield and stabilizes allies.";
+    case "divine_smite": return "high-damage smite with splash follow-up.";
+    case "time_warp": return "team haste pulse and enemy time slow.";
+    case "blizzard_nova": return "global chill pulse with chain frost damage.";
+    case "global_stun": return "board-wide stun pulse from the king.";
+    case "meteor_rain": return "drops meteors on front-line enemies.";
+    case "dragon_fury": return "dragon burst combo with execute pressure.";
+    case "broadside": return "multi-cannon blast that also grants gold.";
+    case "inferno_aura": return "close-range burn aura around hellhound.";
+    default: return "no active ability.";
+  }
+}
+
+function getPassiveDescription(passiveId) {
+  switch (passiveId) {
+    case "ooze_regen": return "attacks restore chest hp over time.";
+    case "espresso_crit": return "high crit chance and crit damage.";
+    case "glacier_venom": return "adds poison-frost slows and chain.";
+    case "pack_hunter": return "bonus damage to stunned targets.";
+    case "armor_break": return "applies increased damage taken debuff.";
+    case "barista_focus": return "extra stun rate and protective shielding.";
+    case "divine_command": return "scales power from adjacent allies.";
+    case "hyperflow": return "faster attacks and faster special cycling.";
+    case "permafrost": return "strong slow, extra chain, better control.";
+    case "royal_tribute": return "chance to generate bonus gold on hit.";
+    case "solar_burn": return "high burn damage with large splash.";
+    case "apex_predator": return "higher execute threshold, anti-boss bonus.";
+    case "high_plunder": return "strong gold steal and crit bonus.";
+    case "alpha_howl": return "aura support plus self damage boost.";
+    default: return "no passive.";
+  }
+}
+
 function createToonGradientTexture() {
   const c = document.createElement("canvas");
   c.width = 4;
@@ -869,7 +911,11 @@ function onRosterClick(event) {
 
   state.selectedMonsterId = monsterId;
   state.selectedSlotIndex = heroByMonster.has(monsterId) ? heroByMonster.get(monsterId).slotIndex : null;
+  panelState.hero = true;
+  panelState.inventory = true;
+  applyPanelVisibility();
 
+  renderRoster();
   updateSelectionIndicator();
   updateAllUi();
 }
@@ -939,6 +985,8 @@ function handleSlotClick(slotIndex) {
   if (occupant) {
     state.selectedMonsterId = occupant;
     state.selectedSlotIndex = slotIndex;
+    panelState.hero = true;
+    applyPanelVisibility();
     log(`${monsterCatalog[occupant].name} selected.`);
   } else {
     state.selectedMonsterId = null;
@@ -2176,7 +2224,8 @@ function triggerHeroSpecial(hero, monster, stats) {
   return false;
 }
 
-function getHeroStats(hero) {
+function getHeroStats(hero, options = {}) {
+  const includeAdjacency = options.includeAdjacency !== false;
   const monster = monsterCatalog[hero.monsterId];
   const entry = collection[hero.monsterId];
 
@@ -2215,11 +2264,12 @@ function getHeroStats(hero) {
   let tributeGold = 0;
   let bossBonus = 0;
 
-  const buffs = getAdjacencyBuffs(hero.slotIndex);
+  const hasSlot = Number.isInteger(hero.slotIndex);
+  const buffs = includeAdjacency && hasSlot ? getAdjacencyBuffs(hero.slotIndex) : { damage: 0, speed: 0 };
   damage *= 1 + buffs.damage;
   fireRate *= 1 + buffs.speed;
 
-  const adjacentAllies = countAdjacentHeroes(hero.slotIndex);
+  const adjacentAllies = includeAdjacency && hasSlot ? countAdjacentHeroes(hero.slotIndex) : 0;
   switch (monster.passive) {
     case "ooze_regen":
       chestHealOnHit = 0.6 + entry.level * 0.2 + entry.stars * 0.45;
@@ -2950,30 +3000,53 @@ function updateSelectedHeroPanel() {
   const monsterId = state.selectedMonsterId;
   const hero = monsterId ? heroByMonster.get(monsterId) : null;
 
-  if (!monsterId || !hero) {
+  if (!monsterId) {
     ui.towerInfo.textContent = "none";
     ui.upgradeBtn.disabled = true;
     ui.removeBtn.disabled = true;
     ui.hint.textContent = "click a hero card, then click a blue stone to place it.";
+    ui.rosterDetailTitle.textContent = "selected: none";
+    ui.rosterDetailStats.textContent = "click a hero card to inspect stats, ability, and passive.";
     return;
   }
 
   const entry = collection[monsterId];
   const monster = monsterCatalog[monsterId];
-  const stats = getHeroStats(hero);
-  const slot = HERO_SLOTS[hero.slotIndex];
+  const stats = hero
+    ? getHeroStats(hero)
+    : getHeroStats({ monsterId, slotIndex: null }, { includeAdjacency: false });
+  const slot = hero ? HERO_SLOTS[hero.slotIndex] : null;
   const specialLabel = getSpecialLabel(monster.special);
   const passiveLabel = getPassiveLabel(monster.passive);
+  const positionText = slot ? `stone r${slot.row + 1}c${slot.col + 1}` : "bench";
+  const extraTags = [];
+  if (stats.critChance > 0) extraTags.push(`crit ${Math.round(stats.critChance * 100)}% x${stats.critMult.toFixed(2)}`);
+  if (stats.burnDps > 0) extraTags.push(`burn ${stats.burnDps.toFixed(0)}/s`);
+  if (stats.slow > 0) extraTags.push(`slow ${Math.round((1 - stats.slow) * 100)}%`);
+  if (stats.stunChance > 0) extraTags.push(`stun ${Math.round(stats.stunChance * 100)}%`);
+  if (stats.executeThreshold > 0) extraTags.push(`execute ${Math.round(stats.executeThreshold * 100)}%`);
+  if (stats.goldStealChance > 0) extraTags.push(`gold steal ${Math.round(stats.goldStealChance * 100)}%`);
+  const extrasText = extraTags.length ? extraTags.join(" | ") : "no extra combat modifiers.";
 
   const nextCost = entry.level >= 30 ? "max" : upgradeCost(monsterId);
   ui.towerInfo.textContent = `${monster.name} | ${monster.rarity} | stars ${entry.stars} | lv ${entry.level}\n` +
-    `dmg ${stats.damage.toFixed(0)} | rng ${stats.range.toFixed(1)} | row ${slot.row + 1} col ${slot.col + 1}\n` +
+    `dmg ${stats.damage.toFixed(0)} | atk/s ${(1 / stats.attackDelay).toFixed(2)} | rng ${stats.range.toFixed(1)} | ${positionText}\n` +
     `ability ${specialLabel} | passive ${passiveLabel}\n` +
+    `${extrasText}\n` +
     `next upgrade ${nextCost}`;
 
-  ui.upgradeBtn.disabled = entry.level >= 30;
-  ui.removeBtn.disabled = false;
-  ui.hint.textContent = hero.disabledTimer > 0 ? "hero stunned by a breaker." : "adjacent mighty/speedy/hellhound grant aura buffs.";
+  ui.upgradeBtn.disabled = entry.level >= 30 || !entry.owned;
+  ui.removeBtn.disabled = !hero;
+  ui.hint.textContent = hero
+    ? (hero.disabledTimer > 0 ? "hero stunned by a breaker." : "adjacent mighty/speedy/hellhound grant aura buffs.")
+    : "selected hero is on bench. click a blue stone to place.";
+
+  ui.rosterDetailTitle.textContent = `${monster.name} • lv ${entry.level} • ${monster.rarity}`;
+  ui.rosterDetailStats.textContent =
+    `stats: dmg ${stats.damage.toFixed(0)} | atk/s ${(1 / stats.attackDelay).toFixed(2)} | range ${stats.range.toFixed(1)} | stars ${entry.stars}\n` +
+    `active (${specialLabel}): ${getSpecialDescription(monster.special)}\n` +
+    `passive (${passiveLabel}): ${getPassiveDescription(monster.passive)}\n` +
+    `extras: ${extrasText}`;
 }
 
 function renderRoster() {
@@ -2994,12 +3067,21 @@ function renderRoster() {
     const entry = collection[id];
     const selected = state.selectedMonsterId === id;
     const placedHero = heroByMonster.get(id);
+    const previewStats = entry.owned
+      ? (placedHero ? getHeroStats(placedHero) : getHeroStats({ monsterId: id, slotIndex: null }, { includeAdjacency: false }))
+      : null;
+    const specialLabel = getSpecialLabel(monster.special);
+    const passiveLabel = getPassiveLabel(monster.passive);
 
     const color = `#${new THREE.Color(monster.color).getHexString()}`;
     const accent = `#${new THREE.Color(monster.accent).getHexString()}`;
 
     cards.push(`
       <div class="roster-card ${entry.owned ? "" : "locked"} ${selected ? "selected" : ""}" data-monster-id="${id}">
+        <div class="roster-topline">
+          <div class="roster-level">lv ${entry.level}</div>
+          <div class="roster-stars">stars ${entry.stars}</div>
+        </div>
         <div class="roster-head">
           <div class="roster-icon" style="background: radial-gradient(circle at 30% 30%, ${accent}, ${color});">
             <span class="roster-icon-text">${visual.badge.toUpperCase()}</span>
@@ -3007,10 +3089,11 @@ function renderRoster() {
           <div class="roster-meta">
             <div class="roster-name">${monster.name}</div>
             <div class="roster-rarity">${monster.rarity}</div>
-            <div class="roster-level">lv ${entry.level}</div>
+            <div class="roster-kit">${passiveLabel}</div>
           </div>
         </div>
-        <div class="roster-stars">stars ${entry.stars}</div>
+        <div class="roster-ability">${specialLabel}</div>
+        ${previewStats ? `<div class="roster-power">dmg ${previewStats.damage.toFixed(0)} | atk/s ${(1 / previewStats.attackDelay).toFixed(2)} | rng ${previewStats.range.toFixed(1)}</div>` : `<div class="roster-power">summon to unlock</div>`}
         ${placedHero ? `<div class="roster-onboard">on board r${HERO_SLOTS[placedHero.slotIndex].row + 1}c${HERO_SLOTS[placedHero.slotIndex].col + 1}</div>` : ""}
       </div>
     `);

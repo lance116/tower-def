@@ -153,8 +153,8 @@ body {
   transform: translateX(-50%);
   bottom: 10px;
   width: min(1240px, calc(100vw - 14px));
-  min-height: 118px;
-  max-height: 180px;
+  min-height: 180px;
+  max-height: 270px;
   overflow: hidden;
 }
 
@@ -235,8 +235,8 @@ button:disabled {
 #heroRoster {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(118px, 118px);
-  gap: 6px;
+  grid-auto-columns: minmax(180px, 180px);
+  gap: 8px;
   overflow-x: auto;
   padding-bottom: 3px;
 }
@@ -245,12 +245,12 @@ button:disabled {
   border: 2px solid #b88d56;
   border-radius: 14px;
   background: linear-gradient(180deg, #fffdf8, #fdeecf);
-  padding: 6px;
-  min-height: 92px;
+  padding: 8px;
+  min-height: 142px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 5px;
   transition: transform 0.12s ease, border-color 0.12s ease;
 }
 
@@ -273,6 +273,12 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.roster-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .roster-icon {
@@ -315,6 +321,39 @@ button:disabled {
   color: #7b6348;
 }
 
+.roster-level,
+.roster-stars {
+  border: 1px solid rgba(141, 103, 61, 0.5);
+  border-radius: 999px;
+  padding: 1px 6px;
+  background: rgba(255, 250, 235, 0.6);
+}
+
+.roster-kit {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #496e90;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.roster-ability {
+  border: 1px solid rgba(112, 83, 52, 0.45);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.56);
+  color: #6f4621;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 5px;
+}
+
+.roster-power {
+  font-size: 0.64rem;
+  font-weight: 800;
+  color: #5a4837;
+}
+
 .roster-onboard {
   margin-top: 4px;
   border-radius: 9px;
@@ -325,6 +364,29 @@ button:disabled {
   font-weight: 800;
   text-align: center;
   padding: 2px 4px;
+}
+
+.roster-detail {
+  border: 2px solid rgba(165, 117, 63, 0.7);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 242, 213, 0.95));
+  box-shadow: 0 6px 16px rgba(71, 43, 18, 0.14);
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.roster-detail-title {
+  font: 800 0.92rem/1.1 "Baloo 2", sans-serif;
+  color: #663d1d;
+  margin-bottom: 5px;
+  text-transform: lowercase;
+}
+
+.roster-detail-stats {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #5e4a37;
+  white-space: pre-line;
 }
 
 #gameOver {
@@ -382,7 +444,7 @@ button:disabled {
   }
 
   #rosterPanel {
-    min-height: 116px;
+    min-height: 168px;
   }
 
   .btn-grid {
@@ -426,6 +488,7 @@ button:disabled {
     bottom: 8px;
     width: calc(100vw - 12px);
     padding: 10px;
+    min-height: 165px;
   }
 
   h2 {
