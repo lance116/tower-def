@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Summoner-Style Idle TD</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="gameCanvas"></canvas>
+
+      <aside id="hud">
+        <h1>Idle Summoner TD</h1>
+
+        <section class="stats">
+          <div><span>Gold</span><strong id="goldValue">0</strong></div>
+          <div><span>Chest HP</span><strong id="chestValue">0</strong></div>
+          <div><span>Wave</span><strong id="waveValue">0</strong></div>
+          <div><span>Enemies</span><strong id="enemyValue">0</strong></div>
+        </section>
+
+        <section class="actions">
+          <button id="summonBtn">Summon Tower (50)</button>
+          <button id="startWaveBtn">Start Wave</button>
+          <button id="speedBtn">Speed x1</button>
+          <button id="fireballBtn">Fireball (80)</button>
+          <button id="freezeBtn">Freeze (120)</button>
+        </section>
+
+        <section class="tower-panel">
+          <h2>Selected Tower</h2>
+          <p id="towerInfo">None</p>
+          <button id="upgradeBtn" disabled>Upgrade</button>
+          <button id="sellBtn" disabled>Sell</button>
+        </section>
+
+        <p id="logText">Defend the chest. Summon, place, and scale.</p>
+      </aside>
+
+      <div id="gameOver" class="hidden">
+        <h2>Chest Destroyed</h2>
+        <p>Your defense collapsed.</p>
+        <button id="restartBtn">Restart Run</button>
+      </div>
+    </div>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>

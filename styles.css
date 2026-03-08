@@ -1,0 +1,175 @@
+:root {
+  --bg-top: #1f2f2b;
+  --bg-bottom: #0f1413;
+  --panel: rgba(20, 27, 25, 0.88);
+  --panel-border: #4e5f4f;
+  --text: #eff7ee;
+  --muted: #b7c8bb;
+  --accent: #f4b36a;
+  --accent-2: #77d4b6;
+  --danger: #df5f4d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  font-family: "Chakra Petch", sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at 20% 10%, var(--bg-top), var(--bg-bottom) 65%);
+}
+
+#app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#gameCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#hud {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: min(340px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(29, 37, 35, 0.95), var(--panel));
+  backdrop-filter: blur(6px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+h1,
+h2 {
+  margin: 0 0 10px;
+  letter-spacing: 0.04em;
+}
+
+h1 {
+  font-size: 1.35rem;
+}
+
+h2 {
+  font-size: 1rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.stats div {
+  border: 1px solid rgba(189, 221, 194, 0.2);
+  border-radius: 10px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(12, 18, 17, 0.65);
+}
+
+.stats span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.stats strong {
+  margin-top: 4px;
+  color: var(--accent);
+  font-size: 1.04rem;
+}
+
+.actions,
+.tower-panel {
+  margin: 12px 0;
+  display: grid;
+  gap: 8px;
+}
+
+button {
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 9px;
+  padding: 10px;
+  font: inherit;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  background: linear-gradient(135deg, rgba(82, 103, 84, 0.75), rgba(53, 66, 54, 0.8));
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease, filter 0.2s ease;
+}
+
+button:hover:enabled {
+  transform: translateY(-1px);
+  border-color: var(--accent-2);
+  filter: brightness(1.08);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#logText {
+  margin: 10px 0 0;
+  min-height: 38px;
+  color: var(--muted);
+  font-size: 0.91rem;
+}
+
+#gameOver {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: 10px;
+  background: rgba(8, 10, 10, 0.74);
+  backdrop-filter: blur(6px);
+}
+
+#gameOver h2 {
+  font-size: 2rem;
+  color: #ffd1c8;
+}
+
+#gameOver p {
+  color: #ffe6df;
+}
+
+#restartBtn {
+  background: linear-gradient(135deg, #945743, #71392d);
+  border-color: #ffb4a2;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 820px) {
+  #hud {
+    top: auto;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-height: 46vh;
+  }
+
+  .stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
