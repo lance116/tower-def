@@ -38,9 +38,7 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xafe9ff);
 scene.fog = new THREE.Fog(0xafe9ff, 65, 210);
 
-const camera = new THREE.PerspectiveCamera(47, window.innerWidth / window.innerHeight, 0.1, 500);
-camera.position.set(0, 78, 10);
-camera.lookAt(0, 0, 0);
+const camera = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.1, 500);
 
 scene.add(new THREE.HemisphereLight(0xffffff, 0x8ed66f, 1.35));
 const sun = new THREE.DirectionalLight(0xfff4c4, 1.15);
@@ -518,6 +516,7 @@ loadGame();
 seedInitialLineup();
 renderRoster();
 updateAllUi();
+updateCameraFraming();
 
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(tick);
@@ -686,11 +685,27 @@ function wireUi() {
 
   window.addEventListener("resize", () => {
     camera.aspect = window.innerWidth / window.innerHeight;
+    updateCameraFraming();
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
   window.addEventListener("beforeunload", saveGame);
+}
+
+function updateCameraFraming() {
+  // Keep an angled/isometric view so units read clearly instead of true top-down.
+  const aspect = window.innerWidth / Math.max(1, window.innerHeight);
+  if (aspect < 0.8) {
+    camera.position.set(0, 56, 72);
+    camera.lookAt(0, 0, 2);
+  } else if (aspect < 1.3) {
+    camera.position.set(0, 50, 66);
+    camera.lookAt(0, 0, 1);
+  } else {
+    camera.position.set(0, 44, 58);
+    camera.lookAt(0, 0, 0);
+  }
 }
 
 function onRosterClick(event) {
