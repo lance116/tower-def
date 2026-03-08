@@ -397,6 +397,40 @@ const PASSIVE_LABELS = {
   alpha_howl: "alpha howl"
 };
 
+const SPECIAL_ICONS = {
+  slime_flood: "🌊",
+  rapid_brew: "☕",
+  frost_spike_burst: "❄",
+  maul_quake: "💥",
+  execution_strike: "☠",
+  latte_barrier: "🛡",
+  divine_smite: "⚡",
+  time_warp: "⏱",
+  blizzard_nova: "🌨",
+  global_stun: "👑",
+  meteor_rain: "☄",
+  dragon_fury: "🐉",
+  broadside: "⚓",
+  inferno_aura: "🔥"
+};
+
+const PASSIVE_ICONS = {
+  ooze_regen: "💚",
+  espresso_crit: "🎯",
+  glacier_venom: "🧊",
+  pack_hunter: "🐾",
+  armor_break: "🗡",
+  barista_focus: "🛡",
+  divine_command: "✨",
+  hyperflow: "⚡",
+  permafrost: "❄",
+  royal_tribute: "💰",
+  solar_burn: "☀",
+  apex_predator: "🐲",
+  high_plunder: "💎",
+  alpha_howl: "🐺"
+};
+
 const enemyTypes = {
   grunt: {
     name: "footman",
@@ -629,6 +663,89 @@ function getSpecialLabel(specialId) {
 
 function getPassiveLabel(passiveId) {
   return PASSIVE_LABELS[passiveId] || "none";
+}
+
+function getSpecialIcon(specialId) {
+  return SPECIAL_ICONS[specialId] || "✦";
+}
+
+function getPassiveIcon(passiveId) {
+  return PASSIVE_ICONS[passiveId] || "✦";
+}
+
+function formatPercent(value) {
+  return `${Math.round(value * 100)}%`;
+}
+
+function getSpecialPowerText(monster, stats) {
+  const cd = `${(monster.specialCooldown || 0).toFixed(1)}s cd`;
+  switch (monster.special) {
+    case "slime_flood":
+      return `${Math.round(stats.damage * 1.55)} aoe dmg (r3.6), slow 64% for 3.4s, chest heal per hit (${cd})`;
+    case "rapid_brew":
+      return `${Math.round(stats.damage * 5.05)} total burst across 3 hits (${cd})`;
+    case "frost_spike_burst":
+      return `up to ${Math.round(stats.damage * 1.45)} x4 targets, 68% slow + freeze (${cd})`;
+    case "maul_quake":
+      return `${Math.round(stats.damage * 2.15)} aoe quake dmg (r3.7), 1.2s stun (${cd})`;
+    case "execution_strike":
+      return `${Math.round(stats.damage * 4.4)} strike, then execute at 48% hp (${cd})`;
+    case "latte_barrier":
+      return `grants ${Math.round(16 + stats.damage * 0.72)} chest shield (${cd})`;
+    case "divine_smite":
+      return `${Math.round(stats.damage * 4.2)} smite + ${Math.round(stats.damage * 1.8)} aoe splash (${cd})`;
+    case "time_warp":
+      return `team cooldown acceleration + enemy slow field (${cd})`;
+    case "blizzard_nova":
+      return `${Math.round(stats.damage * 1.95)} front burst to 6 targets + deep freeze (${cd})`;
+    case "global_stun":
+      return `${Math.round(stats.damage * 0.9)} global pulse damage + board stun (${cd})`;
+    case "meteor_rain":
+      return `${Math.round(stats.damage * 2.25)} meteor aoe on 4 front enemies (${cd})`;
+    case "dragon_fury":
+      return `${Math.round(stats.damage * 3.1)} x3 dragon burst + 55% execute (${cd})`;
+    case "broadside":
+      return `${Math.round(stats.damage * 1.5)} aoe volleys on 5 enemies +22 gold (${cd})`;
+    case "inferno_aura":
+      return `${Math.round(stats.damage * 1.2)} aura hit + burn ${stats.burnDps.toFixed(0)}/s (${cd})`;
+    default:
+      return `no scaling data (${cd})`;
+  }
+}
+
+function getPassivePowerText(monster, stats) {
+  switch (monster.passive) {
+    case "ooze_regen":
+      return `heals chest ${stats.chestHealOnHit.toFixed(1)} per hit`;
+    case "espresso_crit":
+      return `${formatPercent(stats.critChance)} crit at x${stats.critMult.toFixed(2)}`;
+    case "glacier_venom":
+      return `${formatPercent(1 - stats.slow)} slow for ${stats.slowDuration.toFixed(1)}s + ${stats.burnDps.toFixed(0)}/s`;
+    case "pack_hunter":
+      return `+${formatPercent(stats.bonusVsStunned)} damage vs stunned targets`;
+    case "armor_break":
+      return `applies +${formatPercent(stats.armorBreak)} damage taken for ${stats.armorBreakDuration.toFixed(1)}s`;
+    case "barista_focus":
+      return `${formatPercent(stats.stunChance)} stun, ${stats.stunDuration.toFixed(1)}s, +${stats.chestShieldOnStun.toFixed(0)} shield on stun`;
+    case "divine_command":
+      return `adjacency scaling active (damage/speed/range boost)`;
+    case "hyperflow":
+      return `high attack flow (${(1 / stats.attackDelay).toFixed(2)} atk/s) + faster special cycle`;
+    case "permafrost":
+      return `${formatPercent(1 - stats.slow)} slow + chain ${stats.chainJumps} with ${Math.round(stats.chainFalloff * 100)}% falloff`;
+    case "royal_tribute":
+      return `${formatPercent(stats.tributeChance)} chance for +${stats.tributeGold.toFixed(0)} tribute gold`;
+    case "solar_burn":
+      return `burn ${stats.burnDps.toFixed(0)}/s with splash radius ${stats.splash.toFixed(1)}`;
+    case "apex_predator":
+      return `execute at ${formatPercent(stats.executeThreshold)} + ${formatPercent(stats.bossBonus)} vs bosses`;
+    case "high_plunder":
+      return `${formatPercent(stats.goldStealChance)} gold steal + ${formatPercent(stats.critChance)} crit`;
+    case "alpha_howl":
+      return `pack aura support + ${formatPercent(stats.bonusVsStunned)} vs stunned`;
+    default:
+      return "no passive scaling data";
+  }
 }
 
 function getSpecialDescription(specialId) {
@@ -3020,6 +3137,10 @@ function updateSelectedHeroPanel() {
   const slot = hero ? HERO_SLOTS[hero.slotIndex] : null;
   const specialLabel = getSpecialLabel(monster.special);
   const passiveLabel = getPassiveLabel(monster.passive);
+  const specialIcon = getSpecialIcon(monster.special);
+  const passiveIcon = getPassiveIcon(monster.passive);
+  const specialPower = getSpecialPowerText(monster, stats);
+  const passivePower = getPassivePowerText(monster, stats);
   const positionText = slot ? `stone r${slot.row + 1}c${slot.col + 1}` : "bench";
   const extraTags = [];
   if (stats.critChance > 0) extraTags.push(`crit ${Math.round(stats.critChance * 100)}% x${stats.critMult.toFixed(2)}`);
@@ -3034,8 +3155,8 @@ function updateSelectedHeroPanel() {
   ui.towerInfo.textContent = `${monster.name} • ${monster.rarity}\n` +
     `lv ${entry.level} • stars ${entry.stars} • ${positionText}\n` +
     `damage ${stats.damage.toFixed(0)} • atk/s ${(1 / stats.attackDelay).toFixed(2)} • range ${stats.range.toFixed(1)}\n` +
-    `active: ${specialLabel}\n` +
-    `passive: ${passiveLabel}\n` +
+    `active ${specialIcon} ${specialLabel}: ${specialPower}\n` +
+    `passive ${passiveIcon} ${passiveLabel}: ${passivePower}\n` +
     `extras: ${extrasText}\n` +
     `next upgrade: ${nextCost}`;
 
@@ -3048,8 +3169,10 @@ function updateSelectedHeroPanel() {
   ui.rosterDetailTitle.textContent = `${monster.name} • lv ${entry.level} • ${monster.rarity}`;
   ui.rosterDetailStats.textContent =
     `stats: dmg ${stats.damage.toFixed(0)} | atk/s ${(1 / stats.attackDelay).toFixed(2)} | range ${stats.range.toFixed(1)} | stars ${entry.stars}\n` +
-    `active (${specialLabel}): ${getSpecialDescription(monster.special)}\n` +
-    `passive (${passiveLabel}): ${getPassiveDescription(monster.passive)}\n` +
+    `active ${specialIcon} (${specialLabel}): ${getSpecialDescription(monster.special)}\n` +
+    `  impact: ${specialPower}\n` +
+    `passive ${passiveIcon} (${passiveLabel}): ${getPassiveDescription(monster.passive)}\n` +
+    `  scaling: ${passivePower}\n` +
     `extras: ${extrasText}`;
 }
 
@@ -3076,6 +3199,9 @@ function renderRoster() {
       : null;
     const specialLabel = getSpecialLabel(monster.special);
     const passiveLabel = getPassiveLabel(monster.passive);
+    const specialIcon = getSpecialIcon(monster.special);
+    const passiveIcon = getPassiveIcon(monster.passive);
+    const specialTag = previewStats ? getSpecialPowerText(monster, previewStats).split(",")[0] : "no data";
 
     const color = `#${new THREE.Color(monster.color).getHexString()}`;
     const accent = `#${new THREE.Color(monster.accent).getHexString()}`;
@@ -3093,10 +3219,11 @@ function renderRoster() {
           <div class="roster-meta">
             <div class="roster-name">${monster.name}</div>
             <div class="roster-rarity">${monster.rarity}</div>
-            <div class="roster-kit">${passiveLabel}</div>
+            <div class="roster-kit"><span class="roster-skill-icon">${passiveIcon}</span>${passiveLabel}</div>
           </div>
         </div>
-        <div class="roster-ability">${specialLabel}</div>
+        <div class="roster-ability"><span class="roster-skill-icon">${specialIcon}</span>${specialLabel}</div>
+        <div class="roster-skill-power">${specialTag}</div>
         ${previewStats ? `<div class="roster-power">dmg ${previewStats.damage.toFixed(0)} | atk/s ${(1 / previewStats.attackDelay).toFixed(2)} | rng ${previewStats.range.toFixed(1)}</div>` : `<div class="roster-power">summon to unlock</div>`}
         ${placedHero ? `<div class="roster-onboard">on board r${HERO_SLOTS[placedHero.slotIndex].row + 1}c${HERO_SLOTS[placedHero.slotIndex].col + 1}</div>` : ""}
       </div>
