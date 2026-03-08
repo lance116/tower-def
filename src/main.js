@@ -397,39 +397,38 @@ const PASSIVE_LABELS = {
   alpha_howl: "alpha howl"
 };
 
-const SPECIAL_ICONS = {
-  slime_flood: "🌊",
-  rapid_brew: "☕",
-  frost_spike_burst: "❄",
-  maul_quake: "💥",
-  execution_strike: "☠",
-  latte_barrier: "🛡",
-  divine_smite: "⚡",
-  time_warp: "⏱",
-  blizzard_nova: "🌨",
-  global_stun: "👑",
-  meteor_rain: "☄",
-  dragon_fury: "🐉",
-  broadside: "⚓",
-  inferno_aura: "🔥"
+const SKILL_ICON_PATHS = {
+  slime_flood: "M3 14C5 11 7 11 9 14C11 17 13 17 15 14C17 11 19 11 21 14",
+  rapid_brew: "M6 7H14V14H6Z M14 8H17A2 2 0 0 1 17 13H14 M8 5C9 4 9 3 8 2 M11 5C12 4 12 3 11 2",
+  frost_spike_burst: "M12 3V21 M5 7L19 17 M19 7L5 17 M4 12H20",
+  maul_quake: "M4 17L8 13L11 16L14 10L18 14L21 9",
+  execution_strike: "M6 19L18 7 M12 5L20 5 M7 14L3 18",
+  latte_barrier: "M12 3L19 6V12C19 16 16 19 12 21C8 19 5 16 5 12V6Z",
+  divine_smite: "M13 2L6 13H11L10 22L18 10H13Z",
+  time_warp: "M12 5A7 7 0 1 1 5 12 M12 8V12L15 14",
+  blizzard_nova: "M12 3V21 M6 6L18 18 M18 6L6 18 M3 12H21 M8 3L16 21 M16 3L8 21",
+  global_stun: "M5 9L8 4L12 8L16 4L19 9 M7 9V14H17V9 M10 14V18H14V14",
+  meteor_rain: "M4 7L8 3 M10 9L14 5 M16 11L20 7 M7 16A2 2 0 1 0 7 15.99",
+  dragon_fury: "M4 16C8 9 12 7 18 8C15 10 14 13 16 16C12 17 8 18 4 16Z",
+  broadside: "M4 15H14V9H4Z M14 12H19 M6 15V18H8V15 M10 15V18H12V15",
+  inferno_aura: "M12 3C15 7 18 10 15 14C13 17 9 18 7 15C5 12 7 9 12 3Z M12 10C13 12 12 14 10 15",
+  ooze_regen: "M12 4C15 8 17 10 17 13A5 5 0 1 1 7 13C7 10 9 8 12 4 M12 9V17 M8 13H16",
+  espresso_crit: "M12 5L14 10L19 10L15 13L16 18L12 15L8 18L9 13L5 10L10 10Z",
+  glacier_venom: "M6 5L18 19 M18 5L6 19 M12 3V21 M4 12H20",
+  pack_hunter: "M8 15A2 2 0 1 0 8 14.99 M16 15A2 2 0 1 0 16 14.99 M10 10A1.6 1.6 0 1 0 10 9.99 M14 10A1.6 1.6 0 1 0 14 9.99",
+  armor_break: "M12 3L19 6V12C19 16 16 19 12 21C8 19 5 16 5 12V6Z M8 8L16 16 M16 8L8 16",
+  barista_focus: "M6 8H14V14H6Z M14 9H17A2 2 0 0 1 17 13H14 M8 6C9 5 9 4 8 3",
+  divine_command: "M3 12H21 M12 3V21 M6 6L18 18 M18 6L6 18",
+  hyperflow: "M3 10H14 M3 14H18 M9 6L13 10L9 14 M13 10L17 14",
+  permafrost: "M12 3V21 M6 6L18 18 M18 6L6 18 M3 12H21",
+  royal_tribute: "M12 4A8 8 0 1 1 12 20A8 8 0 1 1 12 4 M9 12H15 M12 9V15",
+  solar_burn: "M12 7A5 5 0 1 1 12 17A5 5 0 1 1 12 7 M12 2V5 M12 19V22 M2 12H5 M19 12H22 M4.5 4.5L6.5 6.5 M17.5 17.5L19.5 19.5 M17.5 6.5L19.5 4.5 M4.5 19.5L6.5 17.5",
+  apex_predator: "M6 7C8 6 10 6 12 8C14 6 16 6 18 7C17 11 14 13 12 18C10 13 7 11 6 7",
+  high_plunder: "M12 3L19 12L12 21L5 12Z M9 12L12 9L15 12L12 15Z",
+  alpha_howl: "M5 16C8 10 11 8 15 8C13 10 13 13 16 15C12 17 8 17 5 16"
 };
 
-const PASSIVE_ICONS = {
-  ooze_regen: "💚",
-  espresso_crit: "🎯",
-  glacier_venom: "🧊",
-  pack_hunter: "🐾",
-  armor_break: "🗡",
-  barista_focus: "🛡",
-  divine_command: "✨",
-  hyperflow: "⚡",
-  permafrost: "❄",
-  royal_tribute: "💰",
-  solar_burn: "☀",
-  apex_predator: "🐲",
-  high_plunder: "💎",
-  alpha_howl: "🐺"
-};
+const skillIconCache = new Map();
 
 const enemyTypes = {
   grunt: {
@@ -665,12 +664,30 @@ function getPassiveLabel(passiveId) {
   return PASSIVE_LABELS[passiveId] || "none";
 }
 
-function getSpecialIcon(specialId) {
-  return SPECIAL_ICONS[specialId] || "✦";
-}
+function getSkillIconUri(kind, skillId) {
+  const key = `${kind}:${skillId}`;
+  if (skillIconCache.has(key)) return skillIconCache.get(key);
 
-function getPassiveIcon(passiveId) {
-  return PASSIVE_ICONS[passiveId] || "✦";
+  const path = SKILL_ICON_PATHS[skillId] || "M12 4L20 12L12 20L4 12Z";
+  const palette = kind === "special"
+    ? { bg1: "#ffd47e", bg2: "#e06b3f", ring: "#ffeccb", stroke: "#2b1409" }
+    : { bg1: "#b9ffe8", bg2: "#4eb3a5", ring: "#e9fff8", stroke: "#12322f" };
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <defs>
+      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="${palette.bg1}"/>
+        <stop offset="100%" stop-color="${palette.bg2}"/>
+      </linearGradient>
+    </defs>
+    <rect x="1" y="1" width="22" height="22" rx="11" fill="url(#g)"/>
+    <circle cx="12" cy="12" r="9.6" fill="none" stroke="${palette.ring}" stroke-width="1.4"/>
+    <path d="${path}" fill="none" stroke="${palette.stroke}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+
+  const uri = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  skillIconCache.set(key, uri);
+  return uri;
 }
 
 function formatPercent(value) {
@@ -3120,12 +3137,12 @@ function updateSelectedHeroPanel() {
   const hero = monsterId ? heroByMonster.get(monsterId) : null;
 
   if (!monsterId) {
-    ui.towerInfo.textContent = "none";
+    ui.towerInfo.innerHTML = "none";
     ui.upgradeBtn.disabled = true;
     ui.removeBtn.disabled = true;
     ui.hint.textContent = "click a hero card, then click a blue stone to place it.";
     ui.rosterDetailTitle.textContent = "selected: none";
-    ui.rosterDetailStats.textContent = "click a hero card to inspect stats, ability, and passive.";
+    ui.rosterDetailStats.innerHTML = "click a hero card to inspect stats, ability, and passive.";
     return;
   }
 
@@ -3137,8 +3154,8 @@ function updateSelectedHeroPanel() {
   const slot = hero ? HERO_SLOTS[hero.slotIndex] : null;
   const specialLabel = getSpecialLabel(monster.special);
   const passiveLabel = getPassiveLabel(monster.passive);
-  const specialIcon = getSpecialIcon(monster.special);
-  const passiveIcon = getPassiveIcon(monster.passive);
+  const specialIcon = getSkillIconUri("special", monster.special);
+  const passiveIcon = getSkillIconUri("passive", monster.passive);
   const specialPower = getSpecialPowerText(monster, stats);
   const passivePower = getPassivePowerText(monster, stats);
   const positionText = slot ? `stone r${slot.row + 1}c${slot.col + 1}` : "bench";
@@ -3152,13 +3169,27 @@ function updateSelectedHeroPanel() {
   const extrasText = extraTags.length ? extraTags.join(" | ") : "no extra combat modifiers.";
 
   const nextCost = entry.level >= 30 ? "max" : upgradeCost(monsterId);
-  ui.towerInfo.textContent = `${monster.name} • ${monster.rarity}\n` +
-    `lv ${entry.level} • stars ${entry.stars} • ${positionText}\n` +
-    `damage ${stats.damage.toFixed(0)} • atk/s ${(1 / stats.attackDelay).toFixed(2)} • range ${stats.range.toFixed(1)}\n` +
-    `active ${specialIcon} ${specialLabel}: ${specialPower}\n` +
-    `passive ${passiveIcon} ${passiveLabel}: ${passivePower}\n` +
-    `extras: ${extrasText}\n` +
-    `next upgrade: ${nextCost}`;
+  ui.towerInfo.innerHTML = `
+    <div class="hero-line hero-title-row">${monster.name} • ${monster.rarity}</div>
+    <div class="hero-line">lv ${entry.level} • stars ${entry.stars} • ${positionText}</div>
+    <div class="hero-line">damage ${stats.damage.toFixed(0)} • atk/s ${(1 / stats.attackDelay).toFixed(2)} • range ${stats.range.toFixed(1)}</div>
+    <div class="hero-skill-row">
+      <img class="skill-inline-icon" src="${specialIcon}" alt="active icon" />
+      <div>
+        <div class="hero-skill-name">active: ${specialLabel}</div>
+        <div class="hero-skill-desc">${specialPower}</div>
+      </div>
+    </div>
+    <div class="hero-skill-row">
+      <img class="skill-inline-icon" src="${passiveIcon}" alt="passive icon" />
+      <div>
+        <div class="hero-skill-name">passive: ${passiveLabel}</div>
+        <div class="hero-skill-desc">${passivePower}</div>
+      </div>
+    </div>
+    <div class="hero-line">extras: ${extrasText}</div>
+    <div class="hero-line">next upgrade: ${nextCost}</div>
+  `;
 
   ui.upgradeBtn.disabled = entry.level >= 30 || !entry.owned;
   ui.removeBtn.disabled = !hero;
@@ -3167,13 +3198,24 @@ function updateSelectedHeroPanel() {
     : "selected hero is on bench. click a blue stone to place.";
 
   ui.rosterDetailTitle.textContent = `${monster.name} • lv ${entry.level} • ${monster.rarity}`;
-  ui.rosterDetailStats.textContent =
-    `stats: dmg ${stats.damage.toFixed(0)} | atk/s ${(1 / stats.attackDelay).toFixed(2)} | range ${stats.range.toFixed(1)} | stars ${entry.stars}\n` +
-    `active ${specialIcon} (${specialLabel}): ${getSpecialDescription(monster.special)}\n` +
-    `  impact: ${specialPower}\n` +
-    `passive ${passiveIcon} (${passiveLabel}): ${getPassiveDescription(monster.passive)}\n` +
-    `  scaling: ${passivePower}\n` +
-    `extras: ${extrasText}`;
+  ui.rosterDetailStats.innerHTML = `
+    <div class="detail-line">stats: dmg ${stats.damage.toFixed(0)} | atk/s ${(1 / stats.attackDelay).toFixed(2)} | range ${stats.range.toFixed(1)} | stars ${entry.stars}</div>
+    <div class="detail-skill-row">
+      <img class="skill-inline-icon" src="${specialIcon}" alt="active icon" />
+      <div>
+        <div class="hero-skill-name">active (${specialLabel})</div>
+        <div class="hero-skill-desc">${getSpecialDescription(monster.special)} | impact: ${specialPower}</div>
+      </div>
+    </div>
+    <div class="detail-skill-row">
+      <img class="skill-inline-icon" src="${passiveIcon}" alt="passive icon" />
+      <div>
+        <div class="hero-skill-name">passive (${passiveLabel})</div>
+        <div class="hero-skill-desc">${getPassiveDescription(monster.passive)} | scaling: ${passivePower}</div>
+      </div>
+    </div>
+    <div class="detail-line">extras: ${extrasText}</div>
+  `;
 }
 
 function renderRoster() {
@@ -3199,8 +3241,8 @@ function renderRoster() {
       : null;
     const specialLabel = getSpecialLabel(monster.special);
     const passiveLabel = getPassiveLabel(monster.passive);
-    const specialIcon = getSpecialIcon(monster.special);
-    const passiveIcon = getPassiveIcon(monster.passive);
+    const specialIcon = getSkillIconUri("special", monster.special);
+    const passiveIcon = getSkillIconUri("passive", monster.passive);
     const specialTag = previewStats ? getSpecialPowerText(monster, previewStats).split(",")[0] : "no data";
 
     const color = `#${new THREE.Color(monster.color).getHexString()}`;
@@ -3219,10 +3261,10 @@ function renderRoster() {
           <div class="roster-meta">
             <div class="roster-name">${monster.name}</div>
             <div class="roster-rarity">${monster.rarity}</div>
-            <div class="roster-kit"><span class="roster-skill-icon">${passiveIcon}</span>${passiveLabel}</div>
+            <div class="roster-kit"><img class="roster-skill-icon" src="${passiveIcon}" alt="passive icon" />${passiveLabel}</div>
           </div>
         </div>
-        <div class="roster-ability"><span class="roster-skill-icon">${specialIcon}</span>${specialLabel}</div>
+        <div class="roster-ability"><img class="roster-skill-icon" src="${specialIcon}" alt="active icon" />${specialLabel}</div>
         <div class="roster-skill-power">${specialTag}</div>
         ${previewStats ? `<div class="roster-power">dmg ${previewStats.damage.toFixed(0)} | atk/s ${(1 / previewStats.attackDelay).toFixed(2)} | rng ${previewStats.range.toFixed(1)}</div>` : `<div class="roster-power">summon to unlock</div>`}
         ${placedHero ? `<div class="roster-onboard">on board r${HERO_SLOTS[placedHero.slotIndex].row + 1}c${HERO_SLOTS[placedHero.slotIndex].col + 1}</div>` : ""}

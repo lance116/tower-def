@@ -239,8 +239,49 @@ button:disabled {
 
 #towerInfo {
   min-height: 90px;
-  white-space: pre-line;
+  white-space: normal;
   line-height: 1.28;
+}
+
+.hero-line {
+  margin: 1px 0;
+}
+
+.hero-title-row {
+  font: 800 0.94rem/1.1 "Baloo 2", sans-serif;
+  color: #5b3518;
+}
+
+.hero-skill-row,
+.detail-skill-row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 7px;
+  align-items: start;
+  margin-top: 5px;
+}
+
+.hero-skill-name {
+  font-weight: 800;
+  color: #5e3c1d;
+  text-transform: lowercase;
+}
+
+.hero-skill-desc {
+  font-size: 0.78rem;
+  color: #684f38;
+}
+
+.detail-line {
+  margin: 2px 0;
+}
+
+.skill-inline-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: block;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 #heroRoster {
@@ -370,13 +411,8 @@ button:disabled {
   width: 17px;
   height: 17px;
   border-radius: 999px;
-  border: 1px solid rgba(92, 63, 35, 0.45);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(245, 230, 202, 0.95));
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.65rem;
-  line-height: 1;
+  display: block;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
   flex: 0 0 auto;
 }
 
@@ -425,7 +461,7 @@ button:disabled {
   font-size: 0.78rem;
   font-weight: 800;
   color: #5e4a37;
-  white-space: pre-line;
+  white-space: normal;
 }
 
 #gameOver {
