@@ -45,6 +45,39 @@ body {
   display: block;
 }
 
+#uiDock {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 9;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  width: min(360px, calc(100vw - 20px));
+}
+
+.dock-btn {
+  border: 2px solid #7a5632;
+  border-radius: 12px;
+  padding: 8px 10px;
+  font: 800 0.92rem/1 "Baloo 2", sans-serif;
+  color: #fff8eb;
+  background: linear-gradient(180deg, #67bd53, #4fa13e);
+}
+
+.dock-btn.is-active {
+  background: linear-gradient(180deg, #60c4ff, #2f88dc);
+}
+
+.collapsible-panel {
+  transition: opacity 0.16s ease;
+}
+
+.collapsible-panel.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
 #topHud {
   position: absolute;
   top: 10px;
@@ -360,6 +393,17 @@ button:disabled {
 }
 
 @media (max-width: 720px) {
+  #uiDock {
+    top: 8px;
+    left: 6px;
+    width: calc(100vw - 12px);
+  }
+
+  .dock-btn {
+    font-size: 0.85rem;
+    padding: 7px 9px;
+  }
+
   #topHud {
     top: 8px;
     width: calc(100vw - 12px);

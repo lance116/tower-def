@@ -2,6 +2,14 @@ import * as THREE from "three";
 
 const canvas = document.getElementById("gameCanvas");
 const ui = {
+  topHud: document.getElementById("topHud"),
+  leftPanel: document.getElementById("leftPanel"),
+  rightPanel: document.getElementById("rightPanel"),
+  rosterPanel: document.getElementById("rosterPanel"),
+  toggleStatsBtn: document.getElementById("toggleStatsBtn"),
+  toggleControlsBtn: document.getElementById("toggleControlsBtn"),
+  toggleHeroBtn: document.getElementById("toggleHeroBtn"),
+  toggleInventoryBtn: document.getElementById("toggleInventoryBtn"),
   gold: document.getElementById("goldValue"),
   orbs: document.getElementById("orbValue"),
   stones: document.getElementById("stoneValue"),
@@ -56,53 +64,48 @@ const FREEZE_COST = 170;
 const REPAIR_COST = 180;
 
 const PATH_TILES = [
-  { x: 6, y: 0 },
-  { x: 6, y: 1 },
-  { x: 7, y: 1 },
-  { x: 8, y: 1 },
-  { x: 9, y: 1 },
-  { x: 10, y: 1 },
-  { x: 11, y: 1 },
-  { x: 12, y: 1 },
-  { x: 12, y: 2 },
-  { x: 12, y: 3 },
-  { x: 11, y: 3 },
-  { x: 10, y: 3 },
-  { x: 9, y: 3 },
-  { x: 8, y: 3 },
-  { x: 7, y: 3 },
-  { x: 6, y: 3 },
-  { x: 5, y: 3 },
-  { x: 4, y: 3 },
-  { x: 3, y: 3 },
-  { x: 2, y: 3 },
-  { x: 1, y: 3 },
   { x: 0, y: 3 },
-  { x: 0, y: 4 },
-  { x: 0, y: 5 },
-  { x: 1, y: 5 },
-  { x: 2, y: 5 },
-  { x: 3, y: 5 },
-  { x: 4, y: 5 },
-  { x: 5, y: 5 },
-  { x: 6, y: 5 },
-  { x: 7, y: 5 },
-  { x: 8, y: 5 },
-  { x: 9, y: 5 },
-  { x: 10, y: 5 },
-  { x: 11, y: 5 },
+  { x: 1, y: 3 },
+  { x: 2, y: 3 },
+  { x: 3, y: 3 },
+  { x: 4, y: 3 },
+  { x: 5, y: 3 },
+  { x: 6, y: 3 },
+  { x: 7, y: 3 },
+  { x: 8, y: 3 },
+  { x: 9, y: 3 },
+  { x: 10, y: 3 },
+  { x: 11, y: 3 },
+  { x: 12, y: 3 },
+  { x: 12, y: 4 },
   { x: 12, y: 5 },
-  { x: 12, y: 6 },
-  { x: 12, y: 7 },
-  { x: 11, y: 7 },
-  { x: 10, y: 7 },
-  { x: 9, y: 7 },
-  { x: 8, y: 7 },
-  { x: 7, y: 7 },
+  { x: 11, y: 5 },
+  { x: 10, y: 5 },
+  { x: 9, y: 5 },
+  { x: 8, y: 5 },
+  { x: 7, y: 5 },
+  { x: 6, y: 5 },
+  { x: 5, y: 5 },
+  { x: 4, y: 5 },
+  { x: 3, y: 5 },
+  { x: 2, y: 5 },
+  { x: 1, y: 5 },
+  { x: 0, y: 5 },
+  { x: 0, y: 6 },
+  { x: 0, y: 7 },
+  { x: 1, y: 7 },
+  { x: 2, y: 7 },
+  { x: 3, y: 7 },
+  { x: 4, y: 7 },
+  { x: 5, y: 7 },
   { x: 6, y: 7 },
-  { x: 6, y: 8 },
-  { x: 6, y: 9 },
-  { x: 6, y: 10 }
+  { x: 7, y: 7 },
+  { x: 8, y: 7 },
+  { x: 9, y: 7 },
+  { x: 10, y: 7 },
+  { x: 11, y: 7 },
+  { x: 12, y: 7 },
+  { x: 12, y: 8 }
 ];
 
 const STONE_SLOTS = [
@@ -459,6 +462,13 @@ const state = {
   eventMonsterId: "hellhound"
 };
 
+const panelState = {
+  stats: false,
+  controls: false,
+  hero: false,
+  inventory: false
+};
+
 const collection = {};
 for (const monsterId of Object.keys(monsterCatalog)) {
   collection[monsterId] = {
@@ -517,6 +527,7 @@ seedInitialLineup();
 renderRoster();
 updateAllUi();
 updateCameraFraming();
+applyPanelVisibility();
 
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(tick);
@@ -645,6 +656,23 @@ function buildBoard() {
 }
 
 function wireUi() {
+  ui.toggleStatsBtn.addEventListener("click", () => {
+    panelState.stats = !panelState.stats;
+    applyPanelVisibility();
+  });
+  ui.toggleControlsBtn.addEventListener("click", () => {
+    panelState.controls = !panelState.controls;
+    applyPanelVisibility();
+  });
+  ui.toggleHeroBtn.addEventListener("click", () => {
+    panelState.hero = !panelState.hero;
+    applyPanelVisibility();
+  });
+  ui.toggleInventoryBtn.addEventListener("click", () => {
+    panelState.inventory = !panelState.inventory;
+    applyPanelVisibility();
+  });
+
   ui.startWaveBtn.addEventListener("click", () => {
     if (state.runOver || state.waveActive) return;
     startWave();
@@ -693,17 +721,29 @@ function wireUi() {
   window.addEventListener("beforeunload", saveGame);
 }
 
+function applyPanelVisibility() {
+  ui.topHud.classList.toggle("is-hidden", !panelState.stats);
+  ui.leftPanel.classList.toggle("is-hidden", !panelState.controls);
+  ui.rightPanel.classList.toggle("is-hidden", !panelState.hero);
+  ui.rosterPanel.classList.toggle("is-hidden", !panelState.inventory);
+
+  ui.toggleStatsBtn.classList.toggle("is-active", panelState.stats);
+  ui.toggleControlsBtn.classList.toggle("is-active", panelState.controls);
+  ui.toggleHeroBtn.classList.toggle("is-active", panelState.hero);
+  ui.toggleInventoryBtn.classList.toggle("is-active", panelState.inventory);
+}
+
 function updateCameraFraming() {
-  // Keep an angled/isometric view so units read clearly instead of true top-down.
+  // Keep an angled/isometric view; tuned for a left-to-right lane flow.
   const aspect = window.innerWidth / Math.max(1, window.innerHeight);
   if (aspect < 0.8) {
-    camera.position.set(0, 56, 72);
+    camera.position.set(0, 46, 66);
     camera.lookAt(0, 0, 2);
   } else if (aspect < 1.3) {
-    camera.position.set(0, 50, 66);
+    camera.position.set(0, 40, 60);
     camera.lookAt(0, 0, 1);
   } else {
-    camera.position.set(0, 44, 58);
+    camera.position.set(0, 34, 52);
     camera.lookAt(0, 0, 0);
   }
 }

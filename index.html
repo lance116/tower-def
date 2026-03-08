@@ -23,7 +23,14 @@
     <div id="app">
       <canvas id="gameCanvas"></canvas>
 
-      <header id="topHud">
+      <nav id="uiDock">
+        <button id="toggleStatsBtn" class="dock-btn">stats</button>
+        <button id="toggleControlsBtn" class="dock-btn">controls</button>
+        <button id="toggleHeroBtn" class="dock-btn">hero</button>
+        <button id="toggleInventoryBtn" class="dock-btn">inventory</button>
+      </nav>
+
+      <header id="topHud" class="collapsible-panel is-hidden">
         <div class="stat-pill"><span>gold</span><strong id="goldValue">0</strong></div>
         <div class="stat-pill"><span>orbs</span><strong id="orbValue">0</strong></div>
         <div class="stat-pill"><span>event stones</span><strong id="stoneValue">0</strong></div>
@@ -32,7 +39,7 @@
         <div class="stat-pill"><span>enemies</span><strong id="enemyValue">0</strong></div>
       </header>
 
-      <section id="leftPanel" class="panel">
+      <section id="leftPanel" class="panel collapsible-panel is-hidden">
         <h2>battle controls</h2>
         <div class="btn-grid">
           <button id="startWaveBtn">start wave</button>
@@ -53,7 +60,7 @@
         <p id="logText">summon monsters and place up to 9 heroes.</p>
       </section>
 
-      <section id="rightPanel" class="panel">
+      <section id="rightPanel" class="panel collapsible-panel is-hidden">
         <h2>selected hero</h2>
         <p id="towerInfo">none</p>
         <div class="btn-grid">
@@ -63,7 +70,7 @@
         <p id="hintText">click a hero card, then click a blue stone to place it.</p>
       </section>
 
-      <section id="rosterPanel" class="panel">
+      <section id="rosterPanel" class="panel collapsible-panel is-hidden">
         <h2>monster inventory</h2>
         <div id="heroRoster"></div>
       </section>
