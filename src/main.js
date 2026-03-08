@@ -107,18 +107,6 @@ const PATH_TILES = [
   { x: 6, y: 10 }
 ];
 
-const HERO_SLOTS = [
-  { x: 1, y: 2, row: 0, col: 0 },
-  { x: 5, y: 2, row: 0, col: 1 },
-  { x: 9, y: 2, row: 0, col: 2 },
-  { x: 3, y: 4, row: 1, col: 0 },
-  { x: 7, y: 4, row: 1, col: 1 },
-  { x: 11, y: 4, row: 1, col: 2 },
-  { x: 1, y: 6, row: 2, col: 0 },
-  { x: 5, y: 6, row: 2, col: 1 },
-  { x: 9, y: 6, row: 2, col: 2 }
-];
-
 const STONE_SLOTS = [
   { x: 3, y: 2, row: 0, idx: 0 },
   { x: 7, y: 2, row: 0, idx: 1 },
@@ -130,6 +118,13 @@ const STONE_SLOTS = [
   { x: 7, y: 6, row: 2, idx: 1 },
   { x: 11, y: 6, row: 2, idx: 2 }
 ];
+
+const HERO_SLOTS = STONE_SLOTS.map((slot) => ({
+  x: slot.x,
+  y: slot.y,
+  row: slot.row,
+  col: slot.idx
+}));
 
 const SLOT_GRID_LOOKUP = new Map(HERO_SLOTS.map((slot, i) => [`${slot.row},${slot.col}`, i]));
 
@@ -561,23 +556,24 @@ function buildBoard() {
 
   for (let i = 0; i < HERO_SLOTS.length; i += 1) {
     const slot = HERO_SLOTS[i];
-    const pos = tileToWorld(slot.x, slot.y, 0.12);
+    const pos = tileToWorld(slot.x, slot.y, 0.15);
 
-    const ring = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.3, 1.3, 0.24, 30),
-      new THREE.MeshToonMaterial({ color: 0xeef4fb, gradientMap: toonGradientMap })
+    const stone = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.78, 0.95, 0.4, 10),
+      new THREE.MeshToonMaterial({ color: 0x4caee8, gradientMap: toonGradientMap })
     );
-    ring.position.copy(pos);
-    ring.userData = { slotIndex: i };
-    scene.add(ring);
-    slotMeshes.push(ring);
+    stone.position.copy(pos);
+    stone.userData = { slotIndex: i };
+    scene.add(stone);
+    slotMeshes.push(stone);
 
-    const inner = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.95, 0.95, 0.15, 24),
-      new THREE.MeshBasicMaterial({ color: 0x9ce9ff, transparent: true, opacity: 0.55 })
+    const rune = new THREE.Mesh(
+      new THREE.RingGeometry(0.2, 0.45, 6),
+      new THREE.MeshBasicMaterial({ color: 0x90f0ff, transparent: true, opacity: 0.82, side: THREE.DoubleSide })
     );
-    inner.position.set(pos.x, pos.y + 0.15, pos.z);
-    scene.add(inner);
+    rune.rotation.x = -Math.PI / 2;
+    rune.position.set(pos.x, pos.y + 0.23, pos.z);
+    scene.add(rune);
   }
 
   const spawnPad = new THREE.Mesh(
@@ -625,46 +621,7 @@ function buildBoard() {
   groundPlane.rotation.x = -Math.PI / 2;
   scene.add(groundPlane);
 
-  const sortedStoneSlots = [...STONE_SLOTS].sort((a, b) => (a.row - b.row) || (a.idx - b.idx));
-  const rowProgressBase = [8.5, 22.5, 36.5];
-  for (let i = 0; i < sortedStoneSlots.length; i += 1) {
-    const stoneSlot = sortedStoneSlots[i];
-    const pathIndex = rowProgressBase[stoneSlot.row] + stoneSlot.idx * 0.22;
-    const mesh = new THREE.Mesh(
-      new THREE.DodecahedronGeometry(0.78, 0),
-      new THREE.MeshToonMaterial({ color: 0x4caee8, gradientMap: toonGradientMap })
-    );
-    const pos = tileToWorld(stoneSlot.x, stoneSlot.y, 1.02);
-    mesh.position.copy(pos);
-    scene.add(mesh);
-
-    const hpBg = new THREE.Mesh(
-      new THREE.BoxGeometry(1.4, 0.12, 0.1),
-      new THREE.MeshBasicMaterial({ color: 0x2d2d2d })
-    );
-    hpBg.position.set(pos.x, 2.0, pos.z);
-
-    const hpFill = new THREE.Mesh(
-      new THREE.BoxGeometry(1.28, 0.09, 0.08),
-      new THREE.MeshBasicMaterial({ color: 0x67e5ff })
-    );
-    hpFill.position.set(pos.x, 2.0, pos.z + 0.01);
-
-    // Keep hp internals for mechanics, but hide bars to stay close to SG visual style.
-    hpBg.visible = false;
-    hpFill.visible = false;
-    scene.add(hpBg, hpFill);
-
-    barricades.push({
-      id: i,
-      pathIndex,
-      hp: 220,
-      maxHp: 220,
-      mesh,
-      hpBg,
-      hpFill
-    });
-  }
+  // Barricade mechanics are intentionally disabled; stones are placement slots.
 }
 
 function wireUi() {
@@ -1705,27 +1662,20 @@ function castRepair() {
     return;
   }
   if (state.gold < REPAIR_COST) {
-    log("not enough gold to repair stones.");
+    log("not enough gold to repair chest.");
     return;
   }
 
-  let repaired = false;
-  for (const barrier of barricades) {
-    if (barrier.hp >= barrier.maxHp) continue;
-    barrier.hp = Math.min(barrier.maxHp, barrier.hp + barrier.maxHp * 0.7);
-    updateBarrierVisual(barrier);
-    repaired = true;
-  }
-
-  if (!repaired) {
-    log("all defense stones are already full hp.");
+  if (state.chestHp >= state.chestHpMax) {
+    log("chest is already full hp.");
     return;
   }
 
   state.gold -= REPAIR_COST;
-  state.repairCd = 13;
+  state.repairCd = 11;
+  state.chestHp = Math.min(state.chestHpMax, state.chestHp + state.chestHpMax * 0.35);
   spawnPulse(tileToWorld(6, 4, 0.08), 0x7dd6ff, 0.75);
-  log("defense stones repaired.");
+  log("chest repaired.");
 }
 
 function updateWaveFlow(dt) {
@@ -1924,7 +1874,7 @@ function updateAllUi() {
   ui.freezeBtn.textContent = state.freezeCd > 0 ? `deep freeze (${state.freezeCd.toFixed(1)}s)` : `deep freeze (${FREEZE_COST})`;
 
   ui.repairBtn.disabled = state.runOver || state.repairCd > 0;
-  ui.repairBtn.textContent = state.repairCd > 0 ? `repair stone (${state.repairCd.toFixed(1)}s)` : `repair stone (${REPAIR_COST})`;
+  ui.repairBtn.textContent = state.repairCd > 0 ? `repair chest (${state.repairCd.toFixed(1)}s)` : `repair chest (${REPAIR_COST})`;
 
   ui.summonBtn.disabled = state.runOver;
   ui.summon10Btn.disabled = state.runOver;
@@ -1948,7 +1898,7 @@ function updateSelectedHeroPanel() {
     ui.towerInfo.textContent = "none";
     ui.upgradeBtn.disabled = true;
     ui.removeBtn.disabled = true;
-    ui.hint.textContent = "click a roster card, then click a slot to place it.";
+    ui.hint.textContent = "click a hero card, then click a blue stone to place it.";
     return;
   }
 
