@@ -257,6 +257,10 @@ button.panel-close {
   background: linear-gradient(180deg, var(--yellow-a), var(--yellow-b));
 }
 
+#nextStageBtn {
+  background: linear-gradient(180deg, #ff9ec6, #db4f89);
+}
+
 #repairBtn {
   background: linear-gradient(180deg, #9de8ff, #4dbbe5);
 }

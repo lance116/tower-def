@@ -22,6 +22,7 @@ const ui = {
   wave: document.getElementById("waveValue"),
   enemies: document.getElementById("enemyValue"),
   startWaveBtn: document.getElementById("startWaveBtn"),
+  nextStageBtn: document.getElementById("nextStageBtn"),
   speedBtn: document.getElementById("speedBtn"),
   fireballBtn: document.getElementById("fireballBtn"),
   freezeBtn: document.getElementById("freezeBtn"),
@@ -55,7 +56,8 @@ scene.fog = new THREE.Fog(0xafe9ff, 65, 210);
 
 const camera = new THREE.PerspectiveCamera(56, window.innerWidth / window.innerHeight, 0.1, 500);
 
-scene.add(new THREE.HemisphereLight(0xffffff, 0x8ed66f, 1.35));
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8ed66f, 1.35);
+scene.add(hemiLight);
 const sun = new THREE.DirectionalLight(0xfff4c4, 1.15);
 sun.position.set(35, 72, 20);
 scene.add(sun);
@@ -133,6 +135,153 @@ const HERO_SLOTS = STONE_SLOTS.map((slot) => ({
   row: slot.row,
   col: slot.idx
 }));
+
+const STAGE_THEME_TIERS = [
+  {
+    until: 4,
+    name: "sunny meadow",
+    sky: 0xafe9ff,
+    fog: 0xafe9ff,
+    fogNear: 65,
+    fogFar: 210,
+    grass: 0x59bc53,
+    path: 0xe6be75,
+    stone: 0x4caee8,
+    rune: 0x90f0ff,
+    spawn: 0x84d6ff,
+    chestBase: 0xab6f2d,
+    chestLid: 0xf8c95c,
+    ambient: 0x6dc957,
+    halo: 0xffffff,
+    hemiSky: 0xffffff,
+    hemiGround: 0x8ed66f,
+    hemiIntensity: 1.35,
+    sunColor: 0xfff4c4,
+    sunIntensity: 1.15,
+    sunPos: [35, 72, 20],
+    exposure: 1.17
+  },
+  {
+    until: 8,
+    name: "autumn fields",
+    sky: 0xffd6ac,
+    fog: 0xffd6ac,
+    fogNear: 58,
+    fogFar: 190,
+    grass: 0x9bbf4a,
+    path: 0xe3a25f,
+    stone: 0x63b9ea,
+    rune: 0xffe5b2,
+    spawn: 0xffc47c,
+    chestBase: 0xa4602a,
+    chestLid: 0xf2b653,
+    ambient: 0xd4b368,
+    halo: 0xfff4dd,
+    hemiSky: 0xfff3dc,
+    hemiGround: 0xd2b25d,
+    hemiIntensity: 1.26,
+    sunColor: 0xffcf8f,
+    sunIntensity: 1.22,
+    sunPos: [18, 64, 36],
+    exposure: 1.12
+  },
+  {
+    until: 12,
+    name: "arcane dusk",
+    sky: 0x8db0ff,
+    fog: 0x8db0ff,
+    fogNear: 56,
+    fogFar: 170,
+    grass: 0x5e9e7b,
+    path: 0xb395e0,
+    stone: 0x6b7bff,
+    rune: 0xcdd6ff,
+    spawn: 0x9a9cff,
+    chestBase: 0x70539a,
+    chestLid: 0xc5a6ff,
+    ambient: 0x7290d5,
+    halo: 0xcbd6ff,
+    hemiSky: 0xd8e0ff,
+    hemiGround: 0x5473b8,
+    hemiIntensity: 1.15,
+    sunColor: 0xbba5ff,
+    sunIntensity: 1.05,
+    sunPos: [-22, 63, 34],
+    exposure: 1.06
+  },
+  {
+    until: 16,
+    name: "frost garden",
+    sky: 0xcbf2ff,
+    fog: 0xcbf2ff,
+    fogNear: 58,
+    fogFar: 185,
+    grass: 0x8ac3b9,
+    path: 0xdcecff,
+    stone: 0x8fd8ff,
+    rune: 0xefffff,
+    spawn: 0xb6efff,
+    chestBase: 0x6e90b8,
+    chestLid: 0xd9eeff,
+    ambient: 0xa1e0de,
+    halo: 0xf6ffff,
+    hemiSky: 0xf6ffff,
+    hemiGround: 0x94d4ce,
+    hemiIntensity: 1.32,
+    sunColor: 0xe7f7ff,
+    sunIntensity: 1.08,
+    sunPos: [26, 70, -14],
+    exposure: 1.13
+  },
+  {
+    until: 20,
+    name: "ember canyon",
+    sky: 0xffbe9d,
+    fog: 0xffbe9d,
+    fogNear: 52,
+    fogFar: 160,
+    grass: 0x8f7a4c,
+    path: 0xe18357,
+    stone: 0xff8e75,
+    rune: 0xffd7b6,
+    spawn: 0xff9b7b,
+    chestBase: 0x8a4a1f,
+    chestLid: 0xf6a35f,
+    ambient: 0xd38d4f,
+    halo: 0xffe2b8,
+    hemiSky: 0xffd5b3,
+    hemiGround: 0xb3643d,
+    hemiIntensity: 1.24,
+    sunColor: 0xffa568,
+    sunIntensity: 1.28,
+    sunPos: [-14, 58, 24],
+    exposure: 1.09
+  },
+  {
+    until: Infinity,
+    name: "void citadel",
+    sky: 0x2f3358,
+    fog: 0x2f3358,
+    fogNear: 46,
+    fogFar: 145,
+    grass: 0x4a5a72,
+    path: 0x7b6cab,
+    stone: 0x8b9fff,
+    rune: 0xe8deff,
+    spawn: 0xb8b2ff,
+    chestBase: 0x4e3b77,
+    chestLid: 0xc3a9ff,
+    ambient: 0x58648f,
+    halo: 0xcbc3ff,
+    hemiSky: 0xe4ddff,
+    hemiGround: 0x32426e,
+    hemiIntensity: 1.1,
+    sunColor: 0xa8b6ff,
+    sunIntensity: 0.95,
+    sunPos: [8, 60, 12],
+    exposure: 1.02
+  }
+];
 
 const SLOT_GRID_LOOKUP = new Map(HERO_SLOTS.map((slot, i) => [`${slot.row},${slot.col}`, i]));
 
@@ -347,6 +496,315 @@ const monsterCatalog = {
     burnDps: 28,
     projectileColor: 0xff8a6d,
     eventOnly: true
+  },
+  pebble: {
+    name: "pebble",
+    rarity: "common",
+    color: 0xb6be8f,
+    accent: 0xf2f0d2,
+    baseDamage: 14,
+    range: 6.5,
+    fireRate: 1.05,
+    passive: "thorns_shell",
+    special: "vine_snare",
+    specialCooldown: 10.5,
+    projectileColor: 0xdde0af
+  },
+  fizz: {
+    name: "fizz",
+    rarity: "common",
+    color: 0x7fd4ff,
+    accent: 0xe0f6ff,
+    baseDamage: 13,
+    range: 6.8,
+    fireRate: 1.4,
+    passive: "mana_surge",
+    special: "prism_beam",
+    specialCooldown: 10.2,
+    projectileColor: 0xaff0ff
+  },
+  sprout: {
+    name: "sprout",
+    rarity: "common",
+    color: 0x89d278,
+    accent: 0xe3ffd8,
+    baseDamage: 11,
+    range: 6.9,
+    fireRate: 1.1,
+    passive: "ooze_regen",
+    special: "guardian_totem",
+    specialCooldown: 11.4,
+    projectileColor: 0xc0f59d
+  },
+  emberling: {
+    name: "emberling",
+    rarity: "common",
+    color: 0xff9c74,
+    accent: 0xffe4cb,
+    baseDamage: 15,
+    range: 6.3,
+    fireRate: 1.25,
+    passive: "ember_heart",
+    special: "shadow_barrage",
+    specialCooldown: 10.4,
+    projectileColor: 0xffbf8e
+  },
+  scouty: {
+    name: "scouty",
+    rarity: "common",
+    color: 0x98b8ff,
+    accent: 0xe7eeff,
+    baseDamage: 13,
+    range: 8.8,
+    fireRate: 1.08,
+    passive: "sniper_focus",
+    special: "rapid_brew",
+    specialCooldown: 10.8,
+    projectileColor: 0xb2d2ff
+  },
+  bruno: {
+    name: "bruno",
+    rarity: "rare",
+    color: 0xd09f78,
+    accent: 0xffe6d0,
+    baseDamage: 22,
+    range: 6.4,
+    fireRate: 1.05,
+    splash: 2.8,
+    passive: "pack_hunter",
+    special: "maul_quake",
+    specialCooldown: 9.9,
+    projectileColor: 0xf3c38f
+  },
+  ivy: {
+    name: "ivy",
+    rarity: "rare",
+    color: 0x80d977,
+    accent: 0xe6ffe1,
+    baseDamage: 19,
+    range: 7.2,
+    fireRate: 1.05,
+    passive: "tidal_guard",
+    special: "vine_snare",
+    specialCooldown: 9.6,
+    projectileColor: 0xb7f39a
+  },
+  volt: {
+    name: "volt",
+    rarity: "rare",
+    color: 0x7ac7ff,
+    accent: 0xe0f4ff,
+    baseDamage: 24,
+    range: 6.9,
+    fireRate: 1.35,
+    chainJumps: 2,
+    chainFalloff: 0.77,
+    passive: "storm_link",
+    special: "thunder_dome",
+    specialCooldown: 9.4,
+    projectileColor: 0xa7e3ff
+  },
+  misty: {
+    name: "misty",
+    rarity: "rare",
+    color: 0x95d7f7,
+    accent: 0xe7f8ff,
+    baseDamage: 21,
+    range: 6.9,
+    fireRate: 1.2,
+    passive: "mana_surge",
+    special: "tidal_crash",
+    specialCooldown: 9.8,
+    projectileColor: 0xbdeeff
+  },
+  marina: {
+    name: "marina",
+    rarity: "rare",
+    color: 0x79c7d9,
+    accent: 0xdcf8ff,
+    baseDamage: 20,
+    range: 7.3,
+    fireRate: 1.08,
+    passive: "tidal_guard",
+    special: "guardian_totem",
+    specialCooldown: 9.5,
+    projectileColor: 0xa4e4f4
+  },
+  aurora: {
+    name: "aurora",
+    rarity: "epic",
+    color: 0x7ea2ff,
+    accent: 0xe0e7ff,
+    baseDamage: 37,
+    range: 8,
+    fireRate: 1.3,
+    chainJumps: 3,
+    chainFalloff: 0.8,
+    passive: "storm_link",
+    special: "prism_beam",
+    specialCooldown: 8.4,
+    projectileColor: 0xafe2ff
+  },
+  riftfox: {
+    name: "riftfox",
+    rarity: "epic",
+    color: 0xc484ff,
+    accent: 0xf2deff,
+    baseDamage: 35,
+    range: 7.6,
+    fireRate: 1.26,
+    passive: "shadow_mark",
+    special: "rift_lock",
+    specialCooldown: 8.6,
+    projectileColor: 0xe2a3ff
+  },
+  thunderpaw: {
+    name: "thunderpaw",
+    rarity: "epic",
+    color: 0xffc061,
+    accent: 0xffefc8,
+    baseDamage: 40,
+    range: 7.1,
+    fireRate: 1.2,
+    splash: 3.1,
+    passive: "ember_heart",
+    special: "thunder_dome",
+    specialCooldown: 8.2,
+    projectileColor: 0xffdf84
+  },
+  shade: {
+    name: "shade",
+    rarity: "epic",
+    color: 0x9f9fff,
+    accent: 0xebe6ff,
+    baseDamage: 34,
+    range: 7.7,
+    fireRate: 1.34,
+    passive: "shadow_mark",
+    special: "shadow_barrage",
+    specialCooldown: 8.5,
+    projectileColor: 0xc5b4ff
+  },
+  cobalt: {
+    name: "cobalt",
+    rarity: "epic",
+    color: 0x4bbdff,
+    accent: 0xd7f4ff,
+    baseDamage: 36,
+    range: 9.5,
+    fireRate: 1.08,
+    passive: "sniper_focus",
+    special: "prism_beam",
+    specialCooldown: 8.7,
+    projectileColor: 0x87dcff
+  },
+  seraphina: {
+    name: "seraphina",
+    rarity: "legendary",
+    color: 0xff9aa0,
+    accent: 0xffecef,
+    baseDamage: 62,
+    range: 10.5,
+    fireRate: 1.1,
+    splash: 4.8,
+    passive: "mana_surge",
+    special: "starfall",
+    specialCooldown: 7.4,
+    projectileColor: 0xffb9c6
+  },
+  leviathan: {
+    name: "leviathan",
+    rarity: "legendary",
+    color: 0x73b6ff,
+    accent: 0xdcf0ff,
+    baseDamage: 58,
+    range: 8.4,
+    fireRate: 1.06,
+    passive: "tidal_guard",
+    special: "tidal_crash",
+    specialCooldown: 7.6,
+    projectileColor: 0x9fd8ff
+  },
+  nyx: {
+    name: "nyx",
+    rarity: "legendary",
+    color: 0xba85ff,
+    accent: 0xf3e5ff,
+    baseDamage: 60,
+    range: 8.8,
+    fireRate: 1.2,
+    passive: "shadow_mark",
+    special: "soul_siphon",
+    specialCooldown: 7.3,
+    projectileColor: 0xd7a8ff
+  },
+  atlas: {
+    name: "atlas",
+    rarity: "legendary",
+    color: 0xd2b989,
+    accent: 0xfff1da,
+    baseDamage: 57,
+    range: 7.8,
+    fireRate: 1.05,
+    splash: 3.4,
+    passive: "thorns_shell",
+    special: "guardian_totem",
+    specialCooldown: 7.7,
+    projectileColor: 0xf4d3a0
+  },
+  infernia: {
+    name: "infernia",
+    rarity: "legendary",
+    color: 0xff7f63,
+    accent: 0xffe0d2,
+    baseDamage: 64,
+    range: 9.2,
+    fireRate: 1.12,
+    splash: 4.5,
+    passive: "ember_heart",
+    special: "starfall",
+    specialCooldown: 7.1,
+    projectileColor: 0xffa983
+  },
+  chrono_wisp: {
+    name: "chrono wisp",
+    rarity: "special",
+    color: 0x89e2ff,
+    accent: 0xe3fbff,
+    baseDamage: 54,
+    range: 9.4,
+    fireRate: 1.5,
+    passive: "tempo_master",
+    special: "rift_lock",
+    specialCooldown: 5.8,
+    projectileColor: 0xb4f2ff
+  },
+  void_reaper: {
+    name: "void reaper",
+    rarity: "special",
+    color: 0xbe76ff,
+    accent: 0xf2dfff,
+    baseDamage: 70,
+    range: 9.8,
+    fireRate: 1.28,
+    passive: "lucky_strike",
+    special: "soul_siphon",
+    specialCooldown: 6.4,
+    projectileColor: 0xe2a4ff
+  },
+  crystal_queen: {
+    name: "crystal queen",
+    rarity: "special",
+    color: 0x82d9ff,
+    accent: 0xe8fcff,
+    baseDamage: 66,
+    range: 10.2,
+    fireRate: 1.2,
+    splash: 3.8,
+    passive: "mana_surge",
+    special: "prism_beam",
+    specialCooldown: 6.2,
+    projectileColor: 0xb7f2ff
   }
 };
 
@@ -364,7 +822,30 @@ const MONSTER_VISUALS = {
   felina: { silhouette: "cat", symbol: "flame", badge: "fe" },
   kevin: { silhouette: "dragon", symbol: "fang", badge: "ke" },
   pirate_cat: { silhouette: "cat", symbol: "skull", badge: "pc" },
-  hellhound: { silhouette: "beast", symbol: "claw", badge: "hh" }
+  hellhound: { silhouette: "beast", symbol: "claw", badge: "hh" },
+  pebble: { silhouette: "blob", symbol: "shield", badge: "pb" },
+  fizz: { silhouette: "blob", symbol: "orb", badge: "fz" },
+  sprout: { silhouette: "beast", symbol: "leaf", badge: "sr" },
+  emberling: { silhouette: "cat", symbol: "flame", badge: "em" },
+  scouty: { silhouette: "mage", symbol: "scope", badge: "sc" },
+  bruno: { silhouette: "beast", symbol: "paw", badge: "br" },
+  ivy: { silhouette: "beast", symbol: "leaf", badge: "iv" },
+  volt: { silhouette: "mage", symbol: "bolt", badge: "vo" },
+  misty: { silhouette: "blob", symbol: "wave", badge: "ms" },
+  marina: { silhouette: "mage", symbol: "drop", badge: "ma" },
+  aurora: { silhouette: "dragon", symbol: "prism", badge: "au" },
+  riftfox: { silhouette: "cat", symbol: "rift", badge: "rf" },
+  thunderpaw: { silhouette: "beast", symbol: "thunder", badge: "tp" },
+  shade: { silhouette: "dragon", symbol: "moon", badge: "sh" },
+  cobalt: { silhouette: "mage", symbol: "scope", badge: "co" },
+  seraphina: { silhouette: "cat", symbol: "star", badge: "se" },
+  leviathan: { silhouette: "dragon", symbol: "wave", badge: "lv" },
+  nyx: { silhouette: "mage", symbol: "rift", badge: "nx" },
+  atlas: { silhouette: "beast", symbol: "shield", badge: "at" },
+  infernia: { silhouette: "dragon", symbol: "flame", badge: "in" },
+  chrono_wisp: { silhouette: "mage", symbol: "clock", badge: "cw" },
+  void_reaper: { silhouette: "dragon", symbol: "void", badge: "vr" },
+  crystal_queen: { silhouette: "cat", symbol: "prism", badge: "cq" }
 };
 
 const SPECIAL_LABELS = {
@@ -381,7 +862,16 @@ const SPECIAL_LABELS = {
   meteor_rain: "meteor rain",
   dragon_fury: "dragon fury",
   broadside: "broadside",
-  inferno_aura: "inferno aura"
+  inferno_aura: "inferno aura",
+  prism_beam: "prism beam",
+  thunder_dome: "thunder dome",
+  vine_snare: "vine snare",
+  tidal_crash: "tidal crash",
+  shadow_barrage: "shadow barrage",
+  soul_siphon: "soul siphon",
+  starfall: "starfall",
+  rift_lock: "rift lock",
+  guardian_totem: "guardian totem"
 };
 
 const PASSIVE_LABELS = {
@@ -398,7 +888,16 @@ const PASSIVE_LABELS = {
   solar_burn: "solar burn",
   apex_predator: "apex predator",
   high_plunder: "high plunder",
-  alpha_howl: "alpha howl"
+  alpha_howl: "alpha howl",
+  sniper_focus: "sniper focus",
+  mana_surge: "mana surge",
+  storm_link: "storm link",
+  thorns_shell: "thorns shell",
+  tidal_guard: "tidal guard",
+  shadow_mark: "shadow mark",
+  ember_heart: "ember heart",
+  tempo_master: "tempo master",
+  lucky_strike: "lucky strike"
 };
 
 const SKILL_ICON_PATHS = {
@@ -429,7 +928,25 @@ const SKILL_ICON_PATHS = {
   solar_burn: "M12 7A5 5 0 1 1 12 17A5 5 0 1 1 12 7 M12 2V5 M12 19V22 M2 12H5 M19 12H22 M4.5 4.5L6.5 6.5 M17.5 17.5L19.5 19.5 M17.5 6.5L19.5 4.5 M4.5 19.5L6.5 17.5",
   apex_predator: "M6 7C8 6 10 6 12 8C14 6 16 6 18 7C17 11 14 13 12 18C10 13 7 11 6 7",
   high_plunder: "M12 3L19 12L12 21L5 12Z M9 12L12 9L15 12L12 15Z",
-  alpha_howl: "M5 16C8 10 11 8 15 8C13 10 13 13 16 15C12 17 8 17 5 16"
+  alpha_howl: "M5 16C8 10 11 8 15 8C13 10 13 13 16 15C12 17 8 17 5 16",
+  prism_beam: "M4 12H20 M8 8L12 12L8 16 M14 8L18 12L14 16",
+  thunder_dome: "M6 16C7 11 10 8 14 8C13 10 13 12 16 13C14 15 11 17 6 16 M14 4L12 9H15L11 16",
+  vine_snare: "M4 16C8 17 10 13 12 9C13 7 15 6 18 6 M8 19C11 18 13 15 14 12 M5 12C7 13 9 12 10 10",
+  tidal_crash: "M3 14C5 12 7 12 9 14C11 16 13 16 15 14C17 12 19 12 21 14 M5 18H19",
+  shadow_barrage: "M4 6L10 10 M10 10L4 14 M10 10L4 18 M20 6L14 10 M14 10L20 14 M14 10L20 18",
+  soul_siphon: "M12 3C15 6 16 9 14 12C13 14 11 16 12 21C9 18 7 15 7 12C7 8 9 5 12 3 M16 8L21 8 M16 12L21 12",
+  starfall: "M12 3L14.5 9H21L15.8 12.8L17.8 20L12 15.8L6.2 20L8.2 12.8L3 9H9.5Z",
+  rift_lock: "M5 5H19V19H5Z M8 8L16 16 M16 8L8 16 M12 3V21",
+  guardian_totem: "M12 3L18 7V14C18 17 15.6 19.6 12 21C8.4 19.6 6 17 6 14V7Z",
+  sniper_focus: "M12 4A8 8 0 1 1 12 20A8 8 0 1 1 12 4 M12 7V17 M7 12H17",
+  mana_surge: "M5 15C9 14 9 10 12 6C15 10 15 14 19 15 M12 6V20",
+  storm_link: "M4 12H8L10 8L14 16L16 12H20",
+  thorns_shell: "M12 3L15 8L21 9L17 13L18 20L12 17L6 20L7 13L3 9L9 8Z",
+  tidal_guard: "M4 15C7 11 11 10 14 12C16 13 18 13 20 11 M5 18H19",
+  shadow_mark: "M4 18L20 6 M7 6H12V11 M12 18H17V13",
+  ember_heart: "M12 4C14 7 17 9 15 13C13 16 10 16 9 13C8 10 9 7 12 4 M10 14H14",
+  tempo_master: "M12 4A8 8 0 1 1 12 20A8 8 0 1 1 12 4 M12 8V12L16 14 M5 5L7 7 M17 17L19 19",
+  lucky_strike: "M12 3L15 9H21L16 13L18 21L12 16L6 21L8 13L3 9H9Z M12 9V16"
 };
 
 const skillIconCache = new Map();
@@ -448,7 +965,16 @@ const PASSIVE_AURA_STYLES = {
   solar_burn: { color: 0xffb783, accent: 0xff744a, kind: "flare", spin: 2.1, pulse: 3.1, interval: 1.3 },
   apex_predator: { color: 0xffcf83, accent: 0xde8840, kind: "fang", spin: 2.4, pulse: 2.9, interval: 1.4 },
   high_plunder: { color: 0xffade7, accent: 0xff6bc8, kind: "gem", spin: 2.7, pulse: 3.3, interval: 1.25 },
-  alpha_howl: { color: 0xff916c, accent: 0xc25340, kind: "howl", spin: 2.3, pulse: 3.2, interval: 1.45 }
+  alpha_howl: { color: 0xff916c, accent: 0xc25340, kind: "howl", spin: 2.3, pulse: 3.2, interval: 1.45 },
+  sniper_focus: { color: 0xa9c3ff, accent: 0x7294ff, kind: "halo", spin: 1.8, pulse: 2.4, interval: 1.55 },
+  mana_surge: { color: 0x91ebff, accent: 0x63b8ff, kind: "spiral", spin: 3.6, pulse: 4, interval: 1.2 },
+  storm_link: { color: 0xa8dbff, accent: 0x6d9eff, kind: "spark", spin: 3.1, pulse: 3.4, interval: 1.25 },
+  thorns_shell: { color: 0xc6cf93, accent: 0x94a35d, kind: "shard", spin: 2.2, pulse: 2.6, interval: 1.5 },
+  tidal_guard: { color: 0x7ed9ff, accent: 0x4db6eb, kind: "ripple", spin: 1.6, pulse: 2.5, interval: 1.45 },
+  shadow_mark: { color: 0xd8a7ff, accent: 0x8f62d4, kind: "slash", spin: 3.4, pulse: 3.6, interval: 1.3 },
+  ember_heart: { color: 0xffb28a, accent: 0xff6f4c, kind: "flare", spin: 2.6, pulse: 3.3, interval: 1.35 },
+  tempo_master: { color: 0x90f4ff, accent: 0x69c8ff, kind: "spiral", spin: 4.2, pulse: 4.6, interval: 1.05 },
+  lucky_strike: { color: 0xf2b8ff, accent: 0xd07dff, kind: "gem", spin: 2.9, pulse: 3.4, interval: 1.2 }
 };
 
 const SPECIAL_FX_STYLES = {
@@ -465,7 +991,16 @@ const SPECIAL_FX_STYLES = {
   meteor_rain: { color: 0xffa889, accent: 0xff7f63, kind: "flare", size: 1.32, life: 0.86 },
   dragon_fury: { color: 0xffcf74, accent: 0xffa043, kind: "fang", size: 1.38, life: 0.86 },
   broadside: { color: 0xff98eb, accent: 0xff67d8, kind: "gem", size: 1.24, life: 0.78 },
-  inferno_aura: { color: 0xff8665, accent: 0xff5e3f, kind: "howl", size: 1.15, life: 0.82 }
+  inferno_aura: { color: 0xff8665, accent: 0xff5e3f, kind: "howl", size: 1.15, life: 0.82 },
+  prism_beam: { color: 0x9ee6ff, accent: 0x6fb0ff, kind: "halo", size: 1.26, life: 0.84 },
+  thunder_dome: { color: 0xffd184, accent: 0xffa44d, kind: "spark", size: 1.32, life: 0.85 },
+  vine_snare: { color: 0x9de68e, accent: 0x64b76a, kind: "ripple", size: 1.22, life: 0.92 },
+  tidal_crash: { color: 0x9fe8ff, accent: 0x62c9ff, kind: "spiral", size: 1.35, life: 0.9 },
+  shadow_barrage: { color: 0xcfa9ff, accent: 0x8d63d7, kind: "slash", size: 1.15, life: 0.74 },
+  soul_siphon: { color: 0xe0b8ff, accent: 0xac6de6, kind: "howl", size: 1.22, life: 0.9 },
+  starfall: { color: 0xffcf95, accent: 0xff9766, kind: "flare", size: 1.44, life: 0.95 },
+  rift_lock: { color: 0xafa9ff, accent: 0x7b71dd, kind: "crown", size: 1.3, life: 0.88 },
+  guardian_totem: { color: 0xc0f2bd, accent: 0x7fd385, kind: "sigil", size: 1.36, life: 0.98 }
 };
 
 const enemyTypes = {
@@ -583,6 +1118,148 @@ const enemyTypes = {
     rockDamage: 48,
     ability: "war_cry",
     isBoss: true
+  },
+  assassin: {
+    name: "shadow fang",
+    color: 0x9a83ff,
+    capColor: 0xddc8ff,
+    hpScale: 1.12,
+    speed: 2.85,
+    damage: 5,
+    rewardGold: 17,
+    rewardOrbs: 2,
+    rewardStones: 0,
+    rockDamage: 14,
+    ability: "blink",
+    model: "spike"
+  },
+  juggernaut: {
+    name: "juggernaut",
+    color: 0xb65f56,
+    capColor: 0xffbf88,
+    hpScale: 3.1,
+    speed: 1.22,
+    damage: 9,
+    rewardGold: 22,
+    rewardOrbs: 3,
+    rewardStones: 0,
+    rockDamage: 18,
+    ability: "enrage",
+    model: "cube"
+  },
+  necromancer: {
+    name: "necromancer",
+    color: 0x8658cc,
+    capColor: 0xead5ff,
+    hpScale: 1.75,
+    speed: 1.7,
+    damage: 6,
+    rewardGold: 24,
+    rewardOrbs: 3,
+    rewardStones: 0,
+    rockDamage: 14,
+    ability: "summon_imps",
+    model: "mage"
+  },
+  frost_weaver: {
+    name: "frost weaver",
+    color: 0x7dc6ff,
+    capColor: 0xe5f6ff,
+    hpScale: 1.55,
+    speed: 1.82,
+    damage: 6,
+    rewardGold: 21,
+    rewardOrbs: 3,
+    rewardStones: 0,
+    rockDamage: 13,
+    ability: "hero_chill",
+    model: "mage"
+  },
+  bomber: {
+    name: "goblin bomber",
+    color: 0xff985d,
+    capColor: 0xfff09d,
+    hpScale: 1.2,
+    speed: 2.35,
+    damage: 4,
+    rewardGold: 18,
+    rewardOrbs: 2,
+    rewardStones: 0,
+    rockDamage: 16,
+    ability: "suicide_blast",
+    model: "orb"
+  },
+  leech: {
+    name: "void leech",
+    color: 0x5f7fd1,
+    capColor: 0xc5d8ff,
+    hpScale: 1.9,
+    speed: 1.92,
+    damage: 7,
+    rewardGold: 23,
+    rewardOrbs: 3,
+    rewardStones: 0,
+    rockDamage: 16,
+    ability: "drain",
+    model: "orb"
+  },
+  sentinel: {
+    name: "runic sentinel",
+    color: 0x6abbc0,
+    capColor: 0xd8f8ff,
+    hpScale: 2.35,
+    speed: 1.55,
+    damage: 8,
+    rewardGold: 24,
+    rewardOrbs: 3,
+    rewardStones: 0,
+    rockDamage: 18,
+    ability: "fortify",
+    model: "cube"
+  },
+  mimic: {
+    name: "gold mimic",
+    color: 0xf4d05d,
+    capColor: 0xffffff,
+    hpScale: 0.85,
+    speed: 2.7,
+    damage: 4,
+    rewardGold: 40,
+    rewardOrbs: 4,
+    rewardStones: 45,
+    rockDamage: 10,
+    ability: "split",
+    model: "orb"
+  },
+  boss_colossus: {
+    name: "obsidian colossus",
+    color: 0x8b5c42,
+    capColor: 0xffc489,
+    hpScale: 13.5,
+    speed: 1.08,
+    damage: 20,
+    rewardGold: 330,
+    rewardOrbs: 26,
+    rewardStones: 240,
+    rockDamage: 56,
+    ability: "boss_quake",
+    isBoss: true,
+    model: "cube"
+  },
+  boss_void_queen: {
+    name: "void queen",
+    color: 0xa07bff,
+    capColor: 0xf3ddff,
+    hpScale: 14.8,
+    speed: 1.16,
+    damage: 22,
+    rewardGold: 380,
+    rewardOrbs: 30,
+    rewardStones: 300,
+    rockDamage: 60,
+    ability: "boss_rift",
+    isBoss: true,
+    model: "mage"
   }
 };
 
@@ -593,13 +1270,14 @@ const state = {
   chestHp: 120,
   chestShield: 0,
   chestHpMax: 120,
+  stage: 1,
   wave: 1,
   waveActive: false,
+  stageClearReady: false,
   waveQueue: [],
   spawnedThisWave: 0,
   spawnCooldown: 0,
   spawnInterval: 0.95,
-  autoWaveTimer: 5,
   gameSpeed: 1,
   fireballCd: 0,
   freezeCd: 0,
@@ -607,6 +1285,7 @@ const state = {
   pendingSpell: null,
   globalSlowTimer: 0,
   enemyHasteTimer: 0,
+  heroSlowTimer: 0,
   runOver: false,
   selectedMonsterId: null,
   selectedSlotIndex: null,
@@ -663,8 +1342,14 @@ const mouse = new THREE.Vector2();
 
 const tileMeshes = [];
 const slotMeshes = [];
+const slotRuneMeshes = [];
 let groundPlane;
 let chestMesh;
+let spawnPadMesh;
+let boardAmbientMesh;
+let boardHaloMesh;
+let chestBaseMesh;
+let chestLidMesh;
 
 const barricades = [];
 
@@ -679,6 +1364,7 @@ scene.add(rangeIndicator);
 buildBoard();
 wireUi();
 loadGame();
+applyStageTheme(state.stage);
 seedInitialLineup();
 renderRoster();
 updateAllUi();
@@ -783,6 +1469,50 @@ function getSpecialFxStyle(specialId) {
     size: 1.2,
     life: 0.8
   };
+}
+
+function getStageTheme(stage) {
+  for (const theme of STAGE_THEME_TIERS) {
+    if (stage <= theme.until) return theme;
+  }
+  return STAGE_THEME_TIERS[STAGE_THEME_TIERS.length - 1];
+}
+
+function applyStageTheme(stage) {
+  const theme = getStageTheme(stage);
+  scene.background.setHex(theme.sky);
+  if (scene.fog) {
+    scene.fog.color.setHex(theme.fog);
+    scene.fog.near = theme.fogNear;
+    scene.fog.far = theme.fogFar;
+  }
+
+  hemiLight.color.setHex(theme.hemiSky);
+  hemiLight.groundColor.setHex(theme.hemiGround);
+  hemiLight.intensity = theme.hemiIntensity;
+
+  sun.color.setHex(theme.sunColor);
+  sun.intensity = theme.sunIntensity;
+  sun.position.set(theme.sunPos[0], theme.sunPos[1], theme.sunPos[2]);
+  renderer.toneMappingExposure = theme.exposure;
+
+  for (const tile of tileMeshes) {
+    if (!tile.material || !tile.material.color) continue;
+    tile.material.color.setHex(tile.userData.isPath ? theme.path : theme.grass);
+  }
+
+  for (const stone of slotMeshes) {
+    if (stone.material && stone.material.color) stone.material.color.setHex(theme.stone);
+  }
+  for (const rune of slotRuneMeshes) {
+    if (rune.material && rune.material.color) rune.material.color.setHex(theme.rune);
+  }
+
+  if (spawnPadMesh?.material?.color) spawnPadMesh.material.color.setHex(theme.spawn);
+  if (chestBaseMesh?.material?.color) chestBaseMesh.material.color.setHex(theme.chestBase);
+  if (chestLidMesh?.material?.color) chestLidMesh.material.color.setHex(theme.chestLid);
+  if (boardAmbientMesh?.material?.color) boardAmbientMesh.material.color.setHex(theme.ambient);
+  if (boardHaloMesh?.material?.color) boardHaloMesh.material.color.setHex(theme.halo);
 }
 
 function createFxMaterial(color, opacity = 0.8) {
@@ -932,6 +1662,24 @@ function getSpecialPowerText(monster, stats) {
       return `${Math.round(stats.damage * 1.5)} aoe volleys on 5 enemies +22 gold (${cd})`;
     case "inferno_aura":
       return `${Math.round(stats.damage * 1.2)} aura hit + burn ${stats.burnDps.toFixed(0)}/s (${cd})`;
+    case "prism_beam":
+      return `${Math.round(stats.damage * 2.55)} beam burst to frontline + chain (${cd})`;
+    case "thunder_dome":
+      return `${Math.round(stats.damage * 2.2)} aoe lightning dome + stun (${cd})`;
+    case "vine_snare":
+      return `${Math.round(stats.damage * 1.15)} front snare pulse + root control (${cd})`;
+    case "tidal_crash":
+      return `${Math.round(stats.damage * 1.75)} wave hit + path pushback (${cd})`;
+    case "shadow_barrage":
+      return `${Math.round(stats.damage * 2.3)} shadow burst on 7 targets (${cd})`;
+    case "soul_siphon":
+      return `${Math.round(stats.damage * 4.8)} drain on elite target + chest sustain (${cd})`;
+    case "starfall":
+      return `${Math.round(stats.damage * 2.48)} meteor aoe on 6 enemies + burn (${cd})`;
+    case "rift_lock":
+      return `${Math.round(stats.damage * 0.62)} global pulse + heavy slow/fragility (${cd})`;
+    case "guardian_totem":
+      return `large chest heal+shield and team cooldown reduction (${cd})`;
     default:
       return `no scaling data (${cd})`;
   }
@@ -967,6 +1715,24 @@ function getPassivePowerText(monster, stats) {
       return `${formatPercent(stats.goldStealChance)} gold steal + ${formatPercent(stats.critChance)} crit`;
     case "alpha_howl":
       return `pack aura support + ${formatPercent(stats.bonusVsStunned)} vs stunned`;
+    case "sniper_focus":
+      return `long range burst + ${formatPercent(stats.critChance)} crit at x${stats.critMult.toFixed(2)}`;
+    case "mana_surge":
+      return `higher tempo (${(1 / stats.attackDelay).toFixed(2)} atk/s) + faster special cycle`;
+    case "storm_link":
+      return `chain ${stats.chainJumps} with ${Math.round(stats.chainFalloff * 100)}% carry damage`;
+    case "thorns_shell":
+      return `reflective shell scaling: splash ${stats.splash.toFixed(1)} + armor break`;
+    case "tidal_guard":
+      return `${formatPercent(1 - stats.slow)} slow and chest sustain (${stats.chestHealOnHit.toFixed(1)}/hit)`;
+    case "shadow_mark":
+      return `marks enemies: +${formatPercent(stats.armorBreak)} taken and execute ${formatPercent(stats.executeThreshold)}`;
+    case "ember_heart":
+      return `burn ${stats.burnDps.toFixed(0)}/s + splash ${stats.splash.toFixed(1)}`;
+    case "tempo_master":
+      return `party haste aura and accelerated cooldown rhythm`;
+    case "lucky_strike":
+      return `${formatPercent(stats.critChance)} crit + ${formatPercent(stats.goldStealChance)} gold steal`;
     default:
       return "no passive scaling data";
   }
@@ -988,6 +1754,15 @@ function getSpecialDescription(specialId) {
     case "dragon_fury": return "dragon burst combo with execute pressure.";
     case "broadside": return "multi-cannon blast that also grants gold.";
     case "inferno_aura": return "close-range burn aura around hellhound.";
+    case "prism_beam": return "piercing prismatic beam chain on front enemies.";
+    case "thunder_dome": return "electrical field that stuns and bursts enemies.";
+    case "vine_snare": return "roots and slows clustered enemies in lanes.";
+    case "tidal_crash": return "crashing wave that pushes enemies backward.";
+    case "shadow_barrage": return "rapid dark strikes that expose enemies.";
+    case "soul_siphon": return "drains elite enemies and reinforces the chest.";
+    case "starfall": return "heavy meteor shower with burn and stun.";
+    case "rift_lock": return "global time-rift lock that weakens all enemies.";
+    case "guardian_totem": return "summons a defensive totem for chest + team.";
     default: return "no active ability.";
   }
 }
@@ -1008,6 +1783,15 @@ function getPassiveDescription(passiveId) {
     case "apex_predator": return "higher execute threshold, anti-boss bonus.";
     case "high_plunder": return "strong gold steal and crit bonus.";
     case "alpha_howl": return "aura support plus self damage boost.";
+    case "sniper_focus": return "long-range precision crit scaling.";
+    case "mana_surge": return "increased cast tempo and damage flow.";
+    case "storm_link": return "enhances chain attacks and lightning arcs.";
+    case "thorns_shell": return "defensive shell that inflicts extra punishment.";
+    case "tidal_guard": return "water guard that slows enemies and sustains chest.";
+    case "shadow_mark": return "marks targets for execute and armor break.";
+    case "ember_heart": return "ignites attacks with persistent burn.";
+    case "tempo_master": return "teamwide cadence aura for cooldown acceleration.";
+    case "lucky_strike": return "high crit and extra loot generation.";
     default: return "no passive.";
   }
 }
@@ -1077,45 +1861,46 @@ function buildBoard() {
     rune.rotation.x = -Math.PI / 2;
     rune.position.set(pos.x, pos.y + 0.23, pos.z);
     scene.add(rune);
+    slotRuneMeshes.push(rune);
   }
 
-  const spawnPad = new THREE.Mesh(
+  spawnPadMesh = new THREE.Mesh(
     new THREE.CylinderGeometry(1.15, 1.15, 0.24, 24),
     new THREE.MeshBasicMaterial({ color: 0x84d6ff, transparent: true, opacity: 0.9 })
   );
-  spawnPad.position.copy(tileToWorld(PATH_TILES[0].x, PATH_TILES[0].y, 0.17));
-  scene.add(spawnPad);
+  spawnPadMesh.position.copy(tileToWorld(PATH_TILES[0].x, PATH_TILES[0].y, 0.17));
+  scene.add(spawnPadMesh);
 
   chestMesh = new THREE.Group();
   const chestPos = tileToWorld(PATH_TILES[PATH_TILES.length - 1].x, PATH_TILES[PATH_TILES.length - 1].y, 1.2);
-  const chestBase = new THREE.Mesh(
+  chestBaseMesh = new THREE.Mesh(
     new THREE.BoxGeometry(2.15, 1.5, 1.85),
     new THREE.MeshToonMaterial({ color: 0xab6f2d, gradientMap: toonGradientMap })
   );
-  const chestLid = new THREE.Mesh(
+  chestLidMesh = new THREE.Mesh(
     new THREE.BoxGeometry(2.2, 0.7, 1.92),
     new THREE.MeshToonMaterial({ color: 0xf8c95c, gradientMap: toonGradientMap })
   );
-  chestLid.position.y = 0.97;
-  chestMesh.add(chestBase, chestLid);
+  chestLidMesh.position.y = 0.97;
+  chestMesh.add(chestBaseMesh, chestLidMesh);
   chestMesh.position.copy(chestPos);
   scene.add(chestMesh);
 
-  const ambient = new THREE.Mesh(
+  boardAmbientMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(GRID_W * TILE * 1.45, GRID_H * TILE * 1.45),
     new THREE.MeshBasicMaterial({ color: 0x6dc957, transparent: true, opacity: 0.42 })
   );
-  ambient.rotation.x = -Math.PI / 2;
-  ambient.position.y = -0.85;
-  scene.add(ambient);
+  boardAmbientMesh.rotation.x = -Math.PI / 2;
+  boardAmbientMesh.position.y = -0.85;
+  scene.add(boardAmbientMesh);
 
-  const halo = new THREE.Mesh(
+  boardHaloMesh = new THREE.Mesh(
     new THREE.CircleGeometry(GRID_W * TILE * 0.9, 60),
     new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.18 })
   );
-  halo.rotation.x = -Math.PI / 2;
-  halo.position.y = -0.84;
-  scene.add(halo);
+  boardHaloMesh.rotation.x = -Math.PI / 2;
+  boardHaloMesh.position.y = -0.84;
+  scene.add(boardHaloMesh);
 
   groundPlane = new THREE.Mesh(
     new THREE.PlaneGeometry(GRID_W * TILE * 1.5, GRID_H * TILE * 1.5),
@@ -1164,6 +1949,10 @@ function wireUi() {
   ui.startWaveBtn.addEventListener("click", () => {
     if (state.runOver || state.waveActive) return;
     startWave();
+  });
+  ui.nextStageBtn.addEventListener("click", () => {
+    if (state.runOver || state.waveActive) return;
+    advanceStage();
   });
 
   ui.speedBtn.addEventListener("click", () => {
@@ -1960,6 +2749,103 @@ function drawMonsterSymbol(ctx, symbol, center) {
     ctx.moveTo(center + 12, center + 20);
     ctx.lineTo(center + 16, center - 12);
     ctx.stroke();
+  } else if (symbol === "shield") {
+    ctx.beginPath();
+    ctx.moveTo(center, center - 24);
+    ctx.lineTo(center + 20, center - 8);
+    ctx.lineTo(center + 14, center + 22);
+    ctx.lineTo(center, center + 28);
+    ctx.lineTo(center - 14, center + 22);
+    ctx.lineTo(center - 20, center - 8);
+    ctx.closePath();
+    ctx.stroke();
+  } else if (symbol === "leaf") {
+    ctx.beginPath();
+    ctx.moveTo(center - 18, center + 14);
+    ctx.bezierCurveTo(center - 2, center - 22, center + 24, center - 8, center + 12, center + 16);
+    ctx.bezierCurveTo(center + 4, center + 24, center - 8, center + 24, center - 18, center + 14);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(center - 8, center + 14);
+    ctx.lineTo(center + 12, center - 4);
+    ctx.stroke();
+  } else if (symbol === "scope") {
+    ctx.beginPath();
+    ctx.arc(center, center, 22, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(center - 28, center);
+    ctx.lineTo(center + 28, center);
+    ctx.moveTo(center, center - 28);
+    ctx.lineTo(center, center + 28);
+    ctx.stroke();
+  } else if (symbol === "wave") {
+    ctx.beginPath();
+    ctx.moveTo(center - 30, center + 8);
+    ctx.bezierCurveTo(center - 20, center - 6, center - 8, center - 6, center + 2, center + 8);
+    ctx.bezierCurveTo(center + 12, center + 22, center + 24, center + 22, center + 30, center + 8);
+    ctx.stroke();
+  } else if (symbol === "prism") {
+    ctx.beginPath();
+    ctx.moveTo(center, center - 24);
+    ctx.lineTo(center + 22, center + 12);
+    ctx.lineTo(center - 22, center + 12);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(center, center - 24);
+    ctx.lineTo(center, center + 12);
+    ctx.stroke();
+  } else if (symbol === "rift") {
+    ctx.beginPath();
+    ctx.moveTo(center - 8, center - 26);
+    ctx.lineTo(center + 8, center - 10);
+    ctx.lineTo(center - 4, center + 4);
+    ctx.lineTo(center + 10, center + 24);
+    ctx.stroke();
+  } else if (symbol === "thunder") {
+    ctx.beginPath();
+    ctx.moveTo(center + 8, center - 24);
+    ctx.lineTo(center - 6, center - 2);
+    ctx.lineTo(center + 4, center - 2);
+    ctx.lineTo(center - 8, center + 24);
+    ctx.stroke();
+  } else if (symbol === "moon") {
+    ctx.beginPath();
+    ctx.arc(center - 2, center, 22, -Math.PI * 0.38, Math.PI * 0.38);
+    ctx.arc(center + 10, center, 14, Math.PI * 0.38, -Math.PI * 0.38, true);
+    ctx.stroke();
+  } else if (symbol === "star") {
+    ctx.beginPath();
+    ctx.moveTo(center, center - 24);
+    ctx.lineTo(center + 8, center - 4);
+    ctx.lineTo(center + 26, center - 4);
+    ctx.lineTo(center + 12, center + 8);
+    ctx.lineTo(center + 18, center + 24);
+    ctx.lineTo(center, center + 14);
+    ctx.lineTo(center - 18, center + 24);
+    ctx.lineTo(center - 12, center + 8);
+    ctx.lineTo(center - 26, center - 4);
+    ctx.lineTo(center - 8, center - 4);
+    ctx.closePath();
+    ctx.stroke();
+  } else if (symbol === "clock") {
+    ctx.beginPath();
+    ctx.arc(center, center, 22, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(center, center);
+    ctx.lineTo(center, center - 12);
+    ctx.lineTo(center + 10, center + 2);
+    ctx.stroke();
+  } else if (symbol === "void") {
+    ctx.beginPath();
+    ctx.arc(center, center, 22, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(center, center, 9, 0, Math.PI * 2);
+    ctx.fill();
   } else {
     ctx.beginPath();
     ctx.arc(center, center, 12, 0, Math.PI * 2);
@@ -2084,35 +2970,66 @@ function grantMonster(monsterId) {
 
 function startWave() {
   if (state.runOver) return;
+  if (state.waveActive) return;
+  if (state.stageClearReady) {
+    log("stage cleared. press next stage.");
+    return;
+  }
   state.waveActive = true;
-  state.waveQueue = buildWaveQueue(state.wave);
+  state.wave = state.stage;
+  state.waveQueue = buildWaveQueue(state.stage);
   state.spawnedThisWave = 0;
-  state.spawnInterval = Math.max(0.34, 0.95 - state.wave * 0.012);
+  state.spawnInterval = Math.max(0.22, 0.95 - state.stage * 0.016);
   state.spawnCooldown = 0.1;
-  state.autoWaveTimer = 0;
-  log(`wave ${state.wave} began (${state.waveQueue.length} enemies).`);
+  log(`stage ${state.stage} (${getStageTheme(state.stage).name}) began with ${state.waveQueue.length} enemies.`);
 }
 
-function buildWaveQueue(wave) {
+function advanceStage() {
+  if (state.runOver) return;
+  if (!state.stageClearReady) {
+    log("clear this stage first.");
+    return;
+  }
+  state.stage += 1;
+  state.wave = state.stage;
+  state.stageClearReady = false;
+  applyStageTheme(state.stage);
+  log(`advancing to stage ${state.stage}: ${getStageTheme(state.stage).name}.`);
+  startWave();
+}
+
+function buildWaveQueue(stage) {
   const queue = [];
-  const baseCount = 12 + Math.floor(wave * 2.2);
+  const baseCount = 16 + Math.floor(stage * 2.8);
 
   for (let i = 0; i < baseCount; i += 1) {
     let type = "grunt";
-    if (wave >= 3 && i % 6 === 0) type = "runner";
-    if (wave >= 5 && i % 8 === 4) type = "tank";
-    if (wave >= 7 && i % 7 === 5) type = "breaker";
-    if (wave >= 9 && i % 9 === 2) type = "mage";
-    if (wave >= 11 && i % 11 === 7) type = "shaman";
+    if (stage >= 2 && i % 5 === 0) type = "runner";
+    if (stage >= 4 && i % 7 === 3) type = "tank";
+    if (stage >= 6 && i % 7 === 5) type = "breaker";
+    if (stage >= 8 && i % 9 === 2) type = "mage";
+    if (stage >= 9 && i % 10 === 7) type = "shaman";
+    if (stage >= 10 && i % 8 === 1) type = "assassin";
+    if (stage >= 12 && i % 11 === 6) type = "bomber";
+    if (stage >= 13 && i % 12 === 4) type = "frost_weaver";
+    if (stage >= 14 && i % 13 === 8) type = "leech";
+    if (stage >= 15 && i % 14 === 9) type = "sentinel";
+    if (stage >= 16 && i % 15 === 2) type = "necromancer";
+    if (stage >= 18 && i % 17 === 11) type = "juggernaut";
+    if (stage >= 20 && i % 16 === 5) type = "mimic";
     queue.push(type);
   }
 
-  if (wave % 3 === 0) {
-    queue.splice(Math.max(2, Math.floor(baseCount * 0.6)), 0, "knome");
+  if (stage % 3 === 0) {
+    queue.splice(Math.max(2, Math.floor(baseCount * 0.42)), 0, "knome");
   }
+  if (stage >= 9 && stage % 4 === 0) queue.splice(Math.floor(baseCount * 0.7), 0, "mimic");
+  if (stage >= 14 && stage % 5 === 2) queue.splice(Math.floor(baseCount * 0.55), 0, "juggernaut");
 
-  if (wave % 10 === 0) queue.push("boss_king");
-  else if (wave % 5 === 0) queue.push("boss_archmage");
+  if (stage % 20 === 0) queue.push("boss_void_queen");
+  else if (stage % 15 === 0) queue.push("boss_colossus");
+  else if (stage % 10 === 0) queue.push("boss_king");
+  else if (stage % 5 === 0) queue.push("boss_archmage");
 
   return queue;
 }
@@ -2121,11 +3038,32 @@ function spawnEnemy(type) {
   const enemyType = enemyTypes[type];
   if (!enemyType) return;
 
-  const waveScale = 1 + state.wave * 0.21;
-  const hp = 55 * enemyType.hpScale * waveScale;
-  const speed = enemyType.speed * (1 + Math.min(0.3, state.wave * 0.01));
+  const stageScale = 1 + state.stage * 0.24;
+  let hp = 55 * enemyType.hpScale * stageScale;
+  let speed = enemyType.speed * (1 + Math.min(0.55, state.stage * 0.017));
+  let rewardGold = enemyType.rewardGold;
+  let rewardOrbs = enemyType.rewardOrbs;
+  let rewardStones = enemyType.rewardStones;
+  let rockDamage = enemyType.rockDamage;
+  const isElite = !enemyType.isBoss && state.stage >= 10 && Math.random() < Math.min(0.26, 0.12 + state.stage * 0.004);
 
-  const mesh = createEnemyMesh(enemyType);
+  if (enemyType.isBoss) {
+    hp *= 1 + state.stage * 0.09;
+    speed *= 1 + Math.min(0.18, state.stage * 0.004);
+    rewardGold = Math.round(rewardGold * (1 + state.stage * 0.08));
+    rewardOrbs = Math.round(rewardOrbs * (1 + state.stage * 0.05));
+    rewardStones = Math.round(rewardStones * (1 + state.stage * 0.06));
+    rockDamage = Math.round(rockDamage * (1 + state.stage * 0.05));
+  } else if (isElite) {
+    hp *= 1.48;
+    speed *= 1.12;
+    rewardGold = Math.round(rewardGold * 1.5);
+    rewardOrbs = Math.max(1, Math.round(rewardOrbs * 1.35));
+    rewardStones = Math.round(rewardStones * 1.25);
+    rockDamage = Math.round(rockDamage * 1.32);
+  }
+
+  const mesh = createEnemyMesh(enemyType, isElite);
   scene.add(mesh);
 
   const enemy = {
@@ -2138,10 +3076,10 @@ function spawnEnemy(type) {
     shield: 0,
     speed,
     damage: enemyType.damage,
-    rewardGold: enemyType.rewardGold,
-    rewardOrbs: enemyType.rewardOrbs,
-    rewardStones: enemyType.rewardStones,
-    rockDamage: enemyType.rockDamage,
+    rewardGold,
+    rewardOrbs,
+    rewardStones,
+    rockDamage,
     progress: 0,
     segment: 0,
     t: 0,
@@ -2152,35 +3090,78 @@ function spawnEnemy(type) {
     burnDps: 0,
     armorBreakTimer: 0,
     damageTakenMult: 1,
-    abilityCd: 3 + Math.random() * 2,
+    abilityCd: (enemyType.isBoss ? 5.6 : 4.2) + Math.random() * 2.4,
     attackCd: 0.25,
-    isBoss: !!enemyType.isBoss
+    isBoss: !!enemyType.isBoss,
+    isElite,
+    enraged: false,
+    splitSpawned: false,
+    abilityStacks: 0
   };
 
   setEnemyProgress(enemy, 0);
   enemies.push(enemy);
+  return enemy;
 }
 
-function createEnemyMesh(enemyType) {
-  const size = enemyType.isBoss ? 1.3 : 0.9;
+function createEnemyMesh(enemyType, isElite = false) {
+  const size = enemyType.isBoss ? 1.35 : isElite ? 1.02 : 0.9;
   const group = new THREE.Group();
+  const model = enemyType.model || "orb";
+  const bodyMat = new THREE.MeshToonMaterial({ color: enemyType.color, gradientMap: toonGradientMap });
+  const capMat = new THREE.MeshToonMaterial({ color: enemyType.capColor, gradientMap: toonGradientMap });
 
-  const body = new THREE.Mesh(
-    new THREE.SphereGeometry(size, 14, 12),
-    new THREE.MeshToonMaterial({ color: enemyType.color, gradientMap: toonGradientMap })
-  );
+  let body;
+  if (model === "cube") {
+    body = new THREE.Mesh(new THREE.BoxGeometry(size * 1.45, size * 1.2, size * 1.3), bodyMat);
+    body.position.y = size * 0.52;
+  } else if (model === "spike") {
+    body = new THREE.Mesh(new THREE.OctahedronGeometry(size * 0.95, 0), bodyMat);
+    body.position.y = size * 0.58;
+  } else if (model === "mage") {
+    body = new THREE.Mesh(new THREE.CylinderGeometry(size * 0.55, size * 0.74, size * 1.2, 10), bodyMat);
+    body.position.y = size * 0.52;
+  } else {
+    body = new THREE.Mesh(new THREE.SphereGeometry(size, 14, 12), bodyMat);
+    body.position.y = size * 0.52;
+  }
 
   const cap = new THREE.Mesh(
     new THREE.ConeGeometry(size * 0.58, size * 0.95, 9),
-    new THREE.MeshToonMaterial({ color: enemyType.capColor, gradientMap: toonGradientMap })
+    capMat
   );
-  cap.position.y = size * 0.9;
+  cap.position.y = size * 1.18;
+
+  if (model === "mage") {
+    const hatBrim = new THREE.Mesh(
+      new THREE.TorusGeometry(size * 0.34, size * 0.08, 8, 16),
+      capMat
+    );
+    hatBrim.position.y = size * 0.94;
+    hatBrim.rotation.x = Math.PI / 2;
+    group.add(hatBrim);
+  }
 
   const eyeMat = new THREE.MeshBasicMaterial({ color: 0x281b16 });
   const eyeL = new THREE.Mesh(new THREE.SphereGeometry(size * 0.11, 8, 7), eyeMat);
   const eyeR = eyeL.clone();
-  eyeL.position.set(-size * 0.25, size * 0.14, size * 0.7);
-  eyeR.position.set(size * 0.25, size * 0.14, size * 0.7);
+  eyeL.position.set(-size * 0.25, size * 0.56, size * 0.7);
+  eyeR.position.set(size * 0.25, size * 0.56, size * 0.7);
+
+  if (isElite || enemyType.isBoss) {
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(size * 1.05, size * 0.09, 8, 20),
+      new THREE.MeshBasicMaterial({
+        color: enemyType.isBoss ? 0xffd089 : enemyType.capColor,
+        transparent: true,
+        opacity: enemyType.isBoss ? 0.9 : 0.74
+      })
+    );
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = size * 0.22;
+    group.add(ring);
+    group.userData.ring = ring;
+  }
 
   group.add(body, cap, eyeL, eyeR);
   return group;
@@ -2194,7 +3175,7 @@ function setEnemyProgress(enemy, progress) {
   const from = pathWorld[enemy.segment];
   const to = pathWorld[enemy.segment + 1];
   enemy.mesh.position.lerpVectors(from, to, enemy.t);
-  enemy.mesh.position.y = enemy.isBoss ? 1.05 : 0.7;
+  enemy.mesh.position.y = enemy.isBoss ? 1.18 : enemy.isElite ? 0.82 : 0.7;
 }
 
 function getNextLiveBarrier(enemyProgress) {
@@ -2207,6 +3188,9 @@ function getNextLiveBarrier(enemyProgress) {
 function updateEnemies(dt) {
   for (let i = enemies.length - 1; i >= 0; i -= 1) {
     const enemy = enemies[i];
+    if (enemy.mesh.userData.ring) {
+      enemy.mesh.userData.ring.rotation.z += dt * (enemy.isBoss ? 2 : 1.4);
+    }
 
     if (enemy.burnTimer > 0) {
       enemy.burnTimer -= dt;
@@ -2238,6 +3222,15 @@ function updateEnemies(dt) {
     enemy.abilityCd -= dt;
     if (enemy.abilityCd <= 0) {
       triggerEnemyAbility(enemy);
+    }
+
+    if (enemy.enemyType.ability === "enrage" && !enemy.enraged && enemy.hp / enemy.maxHp <= 0.45) {
+      enemy.enraged = true;
+      enemy.speed *= 1.35;
+      enemy.damage *= 1.45;
+      enemy.rockDamage *= 1.35;
+      enemy.mesh.scale.multiplyScalar(1.1);
+      spawnPulse(enemy.mesh.position, 0xff835f, 0.55);
     }
 
     const barrier = getNextLiveBarrier(enemy.progress);
@@ -2274,9 +3267,9 @@ function updateEnemies(dt) {
 }
 
 function triggerEnemyAbility(enemy) {
-  enemy.abilityCd = enemy.isBoss ? 7.8 : 6.2;
   const ability = enemy.enemyType.ability;
   if (!ability) return;
+  enemy.abilityCd = enemy.isBoss ? 6.6 : 5.2;
 
   if (ability === "heal") {
     for (const other of enemies) {
@@ -2315,6 +3308,130 @@ function triggerEnemyAbility(enemy) {
     state.enemyHasteTimer = 3.8;
     spawnPulse(enemy.mesh.position, 0xff9b56, 0.78);
     log("boss cast war cry.");
+    return;
+  }
+
+  if (ability === "blink") {
+    const blink = 1.3 + Math.random() * 1.1;
+    setEnemyProgress(enemy, Math.min(pathEndProgress - 0.55, enemy.progress + blink));
+    spawnPulse(enemy.mesh.position, 0xc8a7ff, 0.44);
+    return;
+  }
+
+  if (ability === "enrage") {
+    if (!enemy.enraged) {
+      enemy.shield += enemy.maxHp * 0.12;
+      spawnPulse(enemy.mesh.position, 0xff9f8e, 0.5);
+    }
+    return;
+  }
+
+  if (ability === "summon_imps") {
+    if (enemies.length > 170) return;
+    for (let i = 0; i < 2; i += 1) {
+      const imp = spawnEnemy(i === 0 ? "grunt" : "runner");
+      if (!imp) continue;
+      imp.hp *= 0.58;
+      imp.maxHp = imp.hp;
+      imp.rewardGold = Math.max(2, Math.round(imp.rewardGold * 0.35));
+      imp.rewardOrbs = 0;
+      imp.rewardStones = 0;
+      setEnemyProgress(imp, Math.max(0, enemy.progress - 0.45 - i * 0.2));
+    }
+    spawnPulse(enemy.mesh.position, 0xbf94ff, 0.58);
+    return;
+  }
+
+  if (ability === "hero_chill") {
+    state.heroSlowTimer = Math.max(state.heroSlowTimer, 3.6);
+    for (const hero of heroes) {
+      if (hero.mesh.position.distanceToSquared(enemy.mesh.position) <= 7.2 * 7.2) {
+        hero.disabledTimer = Math.max(hero.disabledTimer, 0.38);
+      }
+    }
+    spawnPulse(enemy.mesh.position, 0xa0e6ff, 0.56);
+    return;
+  }
+
+  if (ability === "suicide_blast") {
+    const targetPos = enemy.mesh.position.clone();
+    damageArea(targetPos, 3.2, enemy.maxHp * 0.09);
+    damageChest(enemy.damage * 1.6);
+    spawnPulse(targetPos, 0xffa36f, 0.65);
+    const idx = enemies.indexOf(enemy);
+    if (idx >= 0) removeEnemy(idx, false);
+    return;
+  }
+
+  if (ability === "drain") {
+    let drained = 0;
+    if (state.chestShield > 0) {
+      drained = Math.min(state.chestShield, 18 + state.stage * 1.5);
+      state.chestShield -= drained;
+    } else {
+      drained = Math.max(0, Math.min(state.chestHp - 1, 8 + state.stage));
+      if (drained > 0) damageChest(drained);
+    }
+    enemy.hp = Math.min(enemy.maxHp, enemy.hp + drained * 2.2);
+    spawnPulse(enemy.mesh.position, 0x89a8ff, 0.58);
+    return;
+  }
+
+  if (ability === "fortify") {
+    for (const other of enemies) {
+      if (other.mesh.position.distanceToSquared(enemy.mesh.position) > 7.2 * 7.2) continue;
+      other.shield += other.maxHp * 0.14;
+    }
+    spawnPulse(enemy.mesh.position, 0x85e0df, 0.6);
+    return;
+  }
+
+  if (ability === "split") {
+    if (enemy.splitSpawned || enemies.length > 180) return;
+    enemy.splitSpawned = true;
+    for (let i = 0; i < 2; i += 1) {
+      const split = spawnEnemy(i === 0 ? "runner" : "assassin");
+      if (!split) continue;
+      split.hp *= 0.42;
+      split.maxHp = split.hp;
+      split.rewardGold = Math.max(3, Math.round(split.rewardGold * 0.4));
+      split.rewardOrbs = 0;
+      split.rewardStones = 0;
+      setEnemyProgress(split, Math.max(0, enemy.progress - 0.35 - i * 0.22));
+    }
+    spawnPulse(enemy.mesh.position, 0xffe17f, 0.54);
+    return;
+  }
+
+  if (ability === "boss_quake") {
+    for (const hero of heroes) {
+      hero.disabledTimer = Math.max(hero.disabledTimer, 0.95);
+      hero.cooldown += 0.25;
+    }
+    damageChest(enemy.damage * 1.45);
+    state.enemyHasteTimer = Math.max(state.enemyHasteTimer, 2.5);
+    spawnPulse(enemy.mesh.position, 0xffaa77, 0.9);
+    log("colossus slammed the board.");
+    return;
+  }
+
+  if (ability === "boss_rift") {
+    state.enemyHasteTimer = Math.max(state.enemyHasteTimer, 4.6);
+    state.heroSlowTimer = Math.max(state.heroSlowTimer, 4.1);
+    if (enemies.length < 190) {
+      const spawned = [spawnEnemy("assassin"), spawnEnemy("leech"), spawnEnemy("necromancer")];
+      for (const add of spawned) {
+        if (!add) continue;
+        add.hp *= 0.72;
+        add.maxHp = add.hp;
+        add.rewardGold = Math.max(4, Math.round(add.rewardGold * 0.45));
+        add.rewardOrbs = Math.max(0, Math.round(add.rewardOrbs * 0.5));
+        add.rewardStones = 0;
+        setEnemyProgress(add, Math.max(0, enemy.progress - 0.8));
+      }
+    }
+    spawnPulse(enemy.mesh.position, 0xc7a5ff, 0.96);
+    log("void queen opened a rift.");
   }
 }
 
@@ -2356,6 +3473,7 @@ function updateBarrierVisual(barrier) {
 }
 
 function updateHeroes(dt, elapsed) {
+  const heroTimeScale = state.heroSlowTimer > 0 ? 0.62 : 1;
   for (const hero of heroes) {
     const monster = monsterCatalog[hero.monsterId];
     const visuals = hero.mesh.userData.visuals;
@@ -2390,18 +3508,18 @@ function updateHeroes(dt, elapsed) {
       continue;
     }
 
-    hero.cooldown -= dt;
+    hero.cooldown -= dt * heroTimeScale;
 
     const stats = getHeroStats(hero);
     const passiveStyle = getPassiveAuraStyle(monster.passive);
-    hero.passiveFxTimer -= dt;
+    hero.passiveFxTimer -= dt * heroTimeScale;
     if (hero.passiveFxTimer <= 0) {
       spawnPassiveEffect(monster.passive, hero.mesh.position);
       hero.passiveFxTimer = passiveStyle.interval + Math.random() * 0.35;
     }
 
-    if (monster.passive === "hyperflow" && hero.specialCd > 0) {
-      hero.specialCd = Math.max(0, hero.specialCd - dt * 0.55);
+    if ((monster.passive === "hyperflow" || monster.passive === "mana_surge") && hero.specialCd > 0) {
+      hero.specialCd = Math.max(0, hero.specialCd - dt * 0.58);
     }
 
     if (monster.passive === "alpha_howl") {
@@ -2412,8 +3530,17 @@ function updateHeroes(dt, elapsed) {
       }
     }
 
+    if (monster.passive === "tempo_master") {
+      for (const ally of heroes) {
+        if (ally === hero) continue;
+        if (ally.mesh.position.distanceToSquared(hero.mesh.position) > 7.5 * 7.5) continue;
+        ally.cooldown = Math.max(0, ally.cooldown - dt * 0.28);
+        ally.specialCd = Math.max(0, ally.specialCd - dt * 0.16);
+      }
+    }
+
     if (monster.special && hero.specialCd > 0) {
-      hero.specialCd -= dt;
+      hero.specialCd -= dt * heroTimeScale;
     }
 
     if (monster.special && hero.specialCd <= 0 && enemies.length) {
@@ -2659,6 +3786,156 @@ function triggerHeroSpecial(hero, monster, stats) {
     return hitAny;
   }
 
+  if (monster.special === "prism_beam") {
+    const targets = [...enemies]
+      .sort((a, b) => b.progress - a.progress)
+      .slice(0, 5);
+    if (!targets.length) return false;
+    for (let i = 0; i < targets.length; i += 1) {
+      const t = targets[i];
+      applyDamage(t, stats.damage * (2.55 - i * 0.22));
+      if (i < 3) applyChainLightning(t, 1, 4.6, stats.damage * 0.82, 0.88, stats);
+      spawnSpecialEffect(monster.special, t.mesh.position, 0.9 + i * 0.04);
+      spawnPulse(t.mesh.position, 0x9ce7ff, 0.42);
+    }
+    spawnSpecialEffect(monster.special, hero.mesh.position, 1.2);
+    log(`${monster.name} cast prism beam.`);
+    return true;
+  }
+
+  if (monster.special === "thunder_dome") {
+    const center = enemies.reduce((best, e) => (!best || e.progress > best.progress ? e : best), null);
+    if (!center) return false;
+    damageArea(center.mesh.position, 4.4, stats.damage * 2.2);
+    for (const enemy of enemies) {
+      if (enemy.mesh.position.distanceToSquared(center.mesh.position) > 4.6 * 4.6) continue;
+      enemy.stunTimer = Math.max(enemy.stunTimer, 1.2);
+      enemy.slowFactor = Math.min(enemy.slowFactor, 0.58);
+      enemy.slowTimer = Math.max(enemy.slowTimer, 2.4);
+    }
+    spawnSpecialEffect(monster.special, center.mesh.position, 1.34);
+    spawnFloorMark(center.mesh.position, 0xffcc7f, 3.6, 0.8);
+    log(`${monster.name} cast thunder dome.`);
+    return true;
+  }
+
+  if (monster.special === "vine_snare") {
+    const targets = [...enemies]
+      .sort((a, b) => b.progress - a.progress)
+      .slice(0, 6);
+    if (!targets.length) return false;
+    for (const t of targets) {
+      applyDamage(t, stats.damage * 1.15);
+      t.stunTimer = Math.max(t.stunTimer, 1.05);
+      t.slowFactor = Math.min(t.slowFactor, 0.45);
+      t.slowTimer = Math.max(t.slowTimer, 3.2);
+      spawnSpecialEffect(monster.special, t.mesh.position, 0.86);
+    }
+    spawnFloorMark(hero.mesh.position, 0x92dd86, 3, 0.9);
+    log(`${monster.name} cast vine snare.`);
+    return true;
+  }
+
+  if (monster.special === "tidal_crash") {
+    const targets = [...enemies].sort((a, b) => b.progress - a.progress).slice(0, 7);
+    if (!targets.length) return false;
+    for (let i = 0; i < targets.length; i += 1) {
+      const t = targets[i];
+      applyDamage(t, stats.damage * (1.75 - i * 0.09));
+      const shove = 1.25 - i * 0.12;
+      setEnemyProgress(t, Math.max(0, t.progress - shove));
+      t.slowFactor = Math.min(t.slowFactor, 0.55);
+      t.slowTimer = Math.max(t.slowTimer, 2.6);
+      spawnSpecialEffect(monster.special, t.mesh.position, 0.86 + i * 0.05);
+    }
+    state.globalSlowTimer = Math.max(state.globalSlowTimer, 1.8);
+    spawnSpecialEffect(monster.special, hero.mesh.position, 1.3);
+    log(`${monster.name} cast tidal crash.`);
+    return true;
+  }
+
+  if (monster.special === "shadow_barrage") {
+    const targets = [...enemies]
+      .sort((a, b) => b.progress - a.progress)
+      .slice(0, 7);
+    if (!targets.length) return false;
+    for (let i = 0; i < targets.length; i += 1) {
+      const t = targets[i];
+      applyDamage(t, stats.damage * (2.05 + (Math.random() * 0.55)));
+      t.armorBreakTimer = Math.max(t.armorBreakTimer, 3);
+      t.damageTakenMult = Math.max(t.damageTakenMult, 1.18);
+      spawnSpecialEffect(monster.special, t.mesh.position, 0.74 + i * 0.04);
+    }
+    spawnPulse(hero.mesh.position, 0xcda5ff, 0.62);
+    log(`${monster.name} cast shadow barrage.`);
+    return true;
+  }
+
+  if (monster.special === "soul_siphon") {
+    const target = enemies.reduce((best, e) => (!best || e.maxHp > best.maxHp ? e : best), null);
+    if (!target) return false;
+    const drain = stats.damage * 4.8;
+    applyDamage(target, drain);
+    healChest(8 + stats.damage * 0.08);
+    addChestShield(10 + stats.damage * 0.14);
+    for (const enemy of enemies) {
+      if (enemy === target) continue;
+      if (enemy.mesh.position.distanceToSquared(target.mesh.position) > 3 * 3) continue;
+      applyDamage(enemy, stats.damage * 0.95);
+    }
+    spawnSpecialEffect(monster.special, target.mesh.position, 1.25);
+    spawnPulse(chestMesh.position, 0xd6a8ff, 0.58);
+    log(`${monster.name} cast soul siphon.`);
+    return true;
+  }
+
+  if (monster.special === "starfall") {
+    const targets = [...enemies]
+      .sort((a, b) => b.progress - a.progress)
+      .slice(0, 6);
+    if (!targets.length) return false;
+    for (const t of targets) {
+      damageArea(t.mesh.position, 3.8, stats.damage * 2.48);
+      t.burnTimer = Math.max(t.burnTimer, 3.4);
+      t.burnDps = Math.max(t.burnDps, stats.burnDps || stats.damage * 0.42);
+      t.stunTimer = Math.max(t.stunTimer, 0.55);
+      spawnFloorMark(t.mesh.position, 0xff9d72, 2.9, 0.68);
+      spawnSpecialEffect(monster.special, t.mesh.position, 1);
+    }
+    spawnSpecialEffect(monster.special, hero.mesh.position, 1.35);
+    log(`${monster.name} cast starfall.`);
+    return true;
+  }
+
+  if (monster.special === "rift_lock") {
+    for (const enemy of enemies) {
+      enemy.slowFactor = Math.min(enemy.slowFactor, 0.4);
+      enemy.slowTimer = Math.max(enemy.slowTimer, 3.7);
+      enemy.damageTakenMult = Math.max(enemy.damageTakenMult, 1.2);
+      enemy.armorBreakTimer = Math.max(enemy.armorBreakTimer, 3.7);
+      applyDamage(enemy, stats.damage * 0.62);
+      spawnSpecialEffect(monster.special, enemy.mesh.position, 0.78);
+    }
+    state.globalSlowTimer = Math.max(state.globalSlowTimer, 3.8);
+    spawnSpecialEffect(monster.special, hero.mesh.position, 1.32);
+    log(`${monster.name} cast rift lock.`);
+    return true;
+  }
+
+  if (monster.special === "guardian_totem") {
+    healChest(8 + stats.damage * 0.06);
+    addChestShield(18 + stats.damage * 0.32);
+    for (const ally of heroes) {
+      ally.cooldown = Math.max(0, ally.cooldown - 0.45);
+      ally.specialCd = Math.max(0, ally.specialCd - 0.2);
+      ally.disabledTimer = Math.max(0, ally.disabledTimer - 0.65);
+    }
+    spawnSpecialEffect(monster.special, chestMesh.position, 1.44);
+    spawnPulse(chestMesh.position, 0x9fe59a, 0.78);
+    log(`${monster.name} cast guardian totem.`);
+    return true;
+  }
+
   return false;
 }
 
@@ -2777,6 +4054,56 @@ function getHeroStats(hero, options = {}) {
       damage *= 1.16;
       fireRate *= 1.08;
       bonusVsStunned += 0.2;
+      break;
+    case "sniper_focus":
+      range += 1.9;
+      damage *= 1.12;
+      critChance += 0.16 + (entry.stars - 1) * 0.04;
+      critMult = Math.max(critMult, 2.05);
+      break;
+    case "mana_surge":
+      fireRate *= 1.12;
+      damage *= 1.08;
+      critChance += 0.08;
+      break;
+    case "storm_link":
+      chainJumps = Math.max(chainJumps, 3);
+      chainFalloff = Math.max(chainFalloff, 0.86);
+      damage *= 1.1;
+      break;
+    case "thorns_shell":
+      splash = Math.max(splash, 2.6);
+      armorBreak = Math.max(armorBreak, 0.16);
+      armorBreakDuration = Math.max(armorBreakDuration, 2.8);
+      chestShieldOnStun = Math.max(chestShieldOnStun, 2.8 + entry.stars);
+      break;
+    case "tidal_guard":
+      slow = slow > 0 ? Math.min(slow, 0.5) : 0.55;
+      slowDuration = Math.max(slowDuration, 2.4);
+      chestHealOnHit = Math.max(chestHealOnHit, 0.9 + entry.level * 0.16);
+      break;
+    case "shadow_mark":
+      armorBreak = Math.max(armorBreak, 0.2);
+      armorBreakDuration = Math.max(armorBreakDuration, 3.6);
+      critChance += 0.14;
+      executeThreshold = Math.max(executeThreshold, 0.24);
+      break;
+    case "ember_heart":
+      burnDps = Math.max(burnDps, damage * 0.34);
+      splash = Math.max(splash, 2.8);
+      damage *= 1.1;
+      break;
+    case "tempo_master":
+      fireRate *= 1.36;
+      critChance += 0.08;
+      range += 0.65;
+      break;
+    case "lucky_strike":
+      critChance += 0.22;
+      critMult = Math.max(critMult, 2.2);
+      goldStealChance = Math.max(goldStealChance, 0.24 + (entry.stars - 1) * 0.08);
+      tributeChance = Math.max(tributeChance, 0.15);
+      tributeGold = Math.max(tributeGold, 8 + entry.level * 0.36);
       break;
     default:
       break;
@@ -3251,11 +4578,7 @@ function castRepair() {
 }
 
 function updateWaveFlow(dt) {
-  if (!state.waveActive) {
-    state.autoWaveTimer -= dt;
-    if (state.autoWaveTimer <= 0) startWave();
-    return;
-  }
+  if (!state.waveActive) return;
 
   state.spawnCooldown -= dt;
   while (state.waveQueue.length > 0 && state.spawnCooldown <= 0) {
@@ -3266,16 +4589,17 @@ function updateWaveFlow(dt) {
   }
 
   if (state.waveQueue.length === 0 && enemies.length === 0) {
-    const waveBonusGold = 40 + Math.round(state.wave * 4.5);
-    const waveBonusOrbs = 3 + Math.floor(state.wave / 2);
+    const waveBonusGold = 55 + Math.round(state.stage * 6.5);
+    const waveBonusOrbs = 4 + Math.floor(state.stage / 2);
+    const waveBonusStones = state.stage >= 6 ? 16 + Math.floor(state.stage * 2.4) : 0;
 
     state.gold += waveBonusGold;
     state.orbs += waveBonusOrbs;
-    state.wave += 1;
+    state.stones += waveBonusStones;
     state.waveActive = false;
-    state.autoWaveTimer = 7;
+    state.stageClearReady = true;
 
-    log(`wave clear. +${waveBonusGold} gold, +${waveBonusOrbs} orbs.`);
+    log(`stage ${state.stage} clear. +${waveBonusGold} gold, +${waveBonusOrbs} orbs${waveBonusStones ? `, +${waveBonusStones} stones` : ""}. press next stage.`);
   }
 }
 
@@ -3385,11 +4709,12 @@ function restartRun() {
   state.stones = 0;
   state.chestHp = 120;
   state.chestShield = 0;
+  state.stage = 1;
   state.wave = 1;
   state.waveActive = false;
+  state.stageClearReady = false;
   state.waveQueue.length = 0;
   state.spawnCooldown = 0;
-  state.autoWaveTimer = 5;
   state.gameSpeed = 1;
   state.fireballCd = 0;
   state.freezeCd = 0;
@@ -3397,6 +4722,7 @@ function restartRun() {
   state.pendingSpell = null;
   state.globalSlowTimer = 0;
   state.enemyHasteTimer = 0;
+  state.heroSlowTimer = 0;
   state.runOver = false;
   state.selectedMonsterId = null;
   state.selectedSlotIndex = null;
@@ -3415,6 +4741,7 @@ function restartRun() {
   collection.spikey.stars = Math.max(1, collection.spikey.stars);
 
   seedInitialLineup();
+  applyStageTheme(state.stage);
   ui.speedBtn.textContent = "speed x1";
   ui.gameOver.classList.add("hidden");
   log("new run started.");
@@ -3430,13 +4757,17 @@ function updateAllUi() {
   ui.orbs.textContent = Math.floor(state.orbs).toString();
   ui.stones.textContent = Math.floor(state.stones).toString();
   ui.chest.textContent = `${Math.ceil(state.chestHp)} / ${state.chestHpMax}${state.chestShield > 0 ? ` +${Math.ceil(state.chestShield)} shield` : ""}`;
-  ui.wave.textContent = `${state.wave}${state.waveActive ? " (live)" : ""}`;
+  ui.wave.textContent = `${state.stage}${state.waveActive ? " (live)" : state.stageClearReady ? " (clear)" : ""}`;
   ui.enemies.textContent = `${enemies.length}${state.waveQueue.length > 0 ? ` + ${state.waveQueue.length}` : ""}`;
 
-  ui.startWaveBtn.disabled = state.runOver || state.waveActive;
+  ui.startWaveBtn.disabled = state.runOver || state.waveActive || state.stageClearReady;
   ui.startWaveBtn.textContent = state.waveActive
-    ? "wave active"
-    : `start wave${state.autoWaveTimer > 0 ? ` (${Math.ceil(state.autoWaveTimer)})` : ""}`;
+    ? "stage active"
+    : state.stageClearReady
+      ? "stage clear"
+      : "start stage";
+  ui.nextStageBtn.disabled = state.runOver || state.waveActive || !state.stageClearReady;
+  ui.nextStageBtn.textContent = state.stageClearReady ? `next stage (${state.stage + 1})` : "next stage";
 
   ui.fireballBtn.disabled = state.runOver || state.fireballCd > 0;
   ui.fireballBtn.textContent = state.pendingSpell === "fireball"
@@ -3654,7 +4985,9 @@ function saveGame() {
     stones: state.stones,
     chestHp: state.chestHp,
     chestShield: state.chestShield,
+    stage: state.stage,
     wave: state.wave,
+    stageClearReady: state.stageClearReady,
     collection,
     slotOccupants,
     barriers: barricades.map((b) => b.hp)
@@ -3682,7 +5015,14 @@ function loadGame() {
   state.stones = typeof parsed.stones === "number" ? Math.max(0, parsed.stones) : state.stones;
   state.chestHp = typeof parsed.chestHp === "number" ? Math.max(1, Math.min(state.chestHpMax, parsed.chestHp)) : state.chestHp;
   state.chestShield = typeof parsed.chestShield === "number" ? Math.max(0, Math.min(state.chestHpMax * 3, parsed.chestShield)) : state.chestShield;
-  state.wave = typeof parsed.wave === "number" ? Math.max(1, Math.floor(parsed.wave)) : state.wave;
+  const loadedStage = typeof parsed.stage === "number"
+    ? Math.max(1, Math.floor(parsed.stage))
+    : typeof parsed.wave === "number"
+      ? Math.max(1, Math.floor(parsed.wave))
+      : state.stage;
+  state.stage = loadedStage;
+  state.wave = loadedStage;
+  state.stageClearReady = !!parsed.stageClearReady;
 
   if (parsed.collection && typeof parsed.collection === "object") {
     for (const [id, data] of Object.entries(parsed.collection)) {
@@ -3741,6 +5081,7 @@ function tick() {
     if (state.repairCd > 0) state.repairCd = Math.max(0, state.repairCd - dt);
     if (state.globalSlowTimer > 0) state.globalSlowTimer = Math.max(0, state.globalSlowTimer - dt);
     if (state.enemyHasteTimer > 0) state.enemyHasteTimer = Math.max(0, state.enemyHasteTimer - dt);
+    if (state.heroSlowTimer > 0) state.heroSlowTimer = Math.max(0, state.heroSlowTimer - dt);
 
     updateWaveFlow(dt);
     updateHeroes(dt, elapsed);
