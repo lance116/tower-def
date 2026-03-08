@@ -209,10 +209,12 @@ const monsterCatalog = {
     rarity: "epic",
     color: 0xf4db56,
     accent: 0xfff3bf,
-    baseDamage: 10,
-    range: 5.2,
-    fireRate: 0.95,
-    supportDamage: 0.32,
+    baseDamage: 24,
+    range: 6.2,
+    fireRate: 1.05,
+    supportDamage: 0.58,
+    special: "divine_smite",
+    specialCooldown: 7.5,
     projectileColor: 0xffec8f
   },
   speedy: {
@@ -220,10 +222,12 @@ const monsterCatalog = {
     rarity: "epic",
     color: 0x7ad1ff,
     accent: 0xe4f8ff,
-    baseDamage: 8,
-    range: 5,
-    fireRate: 0.95,
-    supportSpeed: 0.34,
+    baseDamage: 18,
+    range: 6,
+    fireRate: 1.2,
+    supportSpeed: 0.72,
+    special: "time_warp",
+    specialCooldown: 9.2,
     projectileColor: 0x95e8ff
   },
   frostbite: {
@@ -231,12 +235,14 @@ const monsterCatalog = {
     rarity: "epic",
     color: 0x86f3ff,
     accent: 0xebfcff,
-    baseDamage: 19,
+    baseDamage: 34,
     range: 7.2,
-    fireRate: 1.15,
-    splash: 1.8,
-    slow: 0.45,
-    slowDuration: 1.7,
+    fireRate: 1.25,
+    splash: 2.6,
+    slow: 0.35,
+    slowDuration: 2.4,
+    chainJumps: 3,
+    chainFalloff: 0.72,
     projectileColor: 0xb9f8ff
   },
   slime_king: {
@@ -244,11 +250,11 @@ const monsterCatalog = {
     rarity: "legendary",
     color: 0x9e7cff,
     accent: 0xf1e8ff,
-    baseDamage: 24,
+    baseDamage: 44,
     range: 7.4,
-    fireRate: 1.05,
+    fireRate: 1.2,
     special: "global_stun",
-    specialCooldown: 10,
+    specialCooldown: 8.5,
     projectileColor: 0xb89eff
   },
   felina: {
@@ -256,10 +262,12 @@ const monsterCatalog = {
     rarity: "legendary",
     color: 0xff8072,
     accent: 0xffeadf,
-    baseDamage: 30,
-    range: 9,
-    fireRate: 0.85,
-    splash: 3.4,
+    baseDamage: 58,
+    range: 10,
+    fireRate: 1,
+    splash: 4.4,
+    special: "meteor_rain",
+    specialCooldown: 8,
     projectileColor: 0xffa887
   },
   kevin: {
@@ -267,10 +275,13 @@ const monsterCatalog = {
     rarity: "legendary",
     color: 0xffd66d,
     accent: 0xfff6c9,
-    baseDamage: 38,
-    range: 6.8,
-    fireRate: 1,
+    baseDamage: 66,
+    range: 7.4,
+    fireRate: 1.15,
     tripleHit: true,
+    executeThreshold: 0.28,
+    special: "dragon_fury",
+    specialCooldown: 7.2,
     projectileColor: 0xffe18c
   },
   pirate_cat: {
@@ -278,10 +289,13 @@ const monsterCatalog = {
     rarity: "special",
     color: 0xf56fd2,
     accent: 0xffdcf4,
-    baseDamage: 22,
-    range: 7,
-    fireRate: 1.15,
-    splash: 2.2,
+    baseDamage: 42,
+    range: 8.4,
+    fireRate: 1.25,
+    splash: 3.5,
+    special: "broadside",
+    specialCooldown: 8.8,
+    goldStealChance: 0.32,
     projectileColor: 0xff96e8
   },
   hellhound: {
@@ -289,10 +303,13 @@ const monsterCatalog = {
     rarity: "special",
     color: 0xff5a48,
     accent: 0xffd4c5,
-    baseDamage: 16,
-    range: 5.4,
-    fireRate: 1.05,
-    supportDamage: 0.48,
+    baseDamage: 36,
+    range: 6.2,
+    fireRate: 1.28,
+    supportDamage: 0.74,
+    special: "inferno_aura",
+    specialCooldown: 2.1,
+    burnDps: 28,
     projectileColor: 0xff8a6d,
     eventOnly: true
   }
@@ -1063,10 +1080,117 @@ function createHeroMesh(monsterId) {
     })
   );
   iconSprite.position.y = 2.82;
-  iconSprite.scale.set(2.7, 2.7, 1);
+  const rarityIconScale = {
+    common: 2.65,
+    rare: 2.85,
+    epic: 3.15,
+    legendary: 3.38,
+    special: 3.62
+  }[monster.rarity] || 2.7;
+  iconSprite.scale.set(rarityIconScale, rarityIconScale, 1);
+
+  let rareAura = null;
+  let orbitGroup = null;
+  let orbitGroup2 = null;
+
+  if (monster.rarity === "epic" || monster.rarity === "legendary" || monster.rarity === "special") {
+    rareAura = new THREE.Mesh(
+      new THREE.RingGeometry(1.18, 1.34, 28),
+      new THREE.MeshBasicMaterial({ color: rarityColor, transparent: true, opacity: 0.72, side: THREE.DoubleSide })
+    );
+    rareAura.rotation.x = -Math.PI / 2;
+    rareAura.position.y = 0.08;
+  }
+
+  if (monster.rarity === "legendary" || monster.rarity === "special") {
+    orbitGroup = new THREE.Group();
+    orbitGroup.position.y = 2.2;
+    for (let i = 0; i < 3; i += 1) {
+      const orb = new THREE.Mesh(
+        new THREE.SphereGeometry(0.14, 10, 8),
+        new THREE.MeshBasicMaterial({ color: monster.accent, transparent: true, opacity: 0.92 })
+      );
+      const a = (i / 3) * Math.PI * 2;
+      orb.position.set(Math.cos(a) * 0.8, 0, Math.sin(a) * 0.8);
+      orbitGroup.add(orb);
+    }
+  }
+
+  if (monster.rarity === "special") {
+    orbitGroup2 = new THREE.Group();
+    orbitGroup2.position.y = 1.6;
+    for (let i = 0; i < 5; i += 1) {
+      const shard = new THREE.Mesh(
+        new THREE.ConeGeometry(0.06, 0.34, 6),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.84 })
+      );
+      const a = (i / 5) * Math.PI * 2;
+      shard.position.set(Math.cos(a) * 1.02, 0, Math.sin(a) * 1.02);
+      shard.rotation.x = Math.PI / 2;
+      shard.rotation.z = a;
+      orbitGroup2.add(shard);
+    }
+  }
+
+  if (monsterId === "slime_king") {
+    const crown = new THREE.Mesh(
+      new THREE.ConeGeometry(0.26, 0.46, 7),
+      new THREE.MeshToonMaterial({ color: 0xffdf73, gradientMap: toonGradientMap })
+    );
+    crown.position.y = 2.22;
+    group.add(crown);
+  }
+
+  if (monsterId === "felina") {
+    const wingL = new THREE.Mesh(
+      new THREE.BoxGeometry(0.12, 0.66, 0.44),
+      new THREE.MeshToonMaterial({ color: 0xffcfbe, gradientMap: toonGradientMap })
+    );
+    const wingR = wingL.clone();
+    wingL.position.set(-0.54, 1.55, -0.05);
+    wingR.position.set(0.54, 1.55, -0.05);
+    wingL.rotation.z = 0.42;
+    wingR.rotation.z = -0.42;
+    group.add(wingL, wingR);
+  }
+
+  if (monsterId === "kevin") {
+    const headL = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 10), bodyMat);
+    const headR = headL.clone();
+    headL.position.set(-0.45, 1.45, 0.16);
+    headR.position.set(0.45, 1.45, 0.16);
+    group.add(headL, headR);
+  }
+
+  if (monsterId === "pirate_cat") {
+    const mast = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.03, 0.03, 0.7, 6),
+      new THREE.MeshToonMaterial({ color: 0x5a3d28, gradientMap: toonGradientMap })
+    );
+    mast.position.set(-0.32, 2.05, -0.08);
+    const flag = new THREE.Mesh(
+      new THREE.BoxGeometry(0.26, 0.16, 0.02),
+      new THREE.MeshToonMaterial({ color: 0xf7f0e1, gradientMap: toonGradientMap })
+    );
+    flag.position.set(-0.18, 2.22, -0.08);
+    group.add(mast, flag);
+  }
+
+  if (monsterId === "hellhound") {
+    const mane = new THREE.Mesh(
+      new THREE.TorusGeometry(0.46, 0.08, 8, 16),
+      new THREE.MeshBasicMaterial({ color: 0xff7f5a, transparent: true, opacity: 0.85 })
+    );
+    mane.position.y = 1.88;
+    mane.rotation.x = Math.PI / 2;
+    group.add(mane);
+  }
 
   group.add(base, ring, body, eyeL, eyeR, mouth, iconSprite);
-  group.userData.visuals = { ring, iconSprite, body, iconScale: 2.7 };
+  if (rareAura) group.add(rareAura);
+  if (orbitGroup) group.add(orbitGroup);
+  if (orbitGroup2) group.add(orbitGroup2);
+  group.userData.visuals = { ring, iconSprite, body, iconScale: rarityIconScale, rareAura, orbitGroup, orbitGroup2 };
   return group;
 }
 
@@ -1083,13 +1207,22 @@ function createMonsterSpriteTexture(monsterId) {
 
   const c1 = new THREE.Color(monster.color);
   const c2 = new THREE.Color(monster.accent);
+  const rarityTone = new THREE.Color(rarityCatalog[monster.rarity]?.color || 0xffffff);
 
   const halo = ctx.createRadialGradient(center, center, 12, center, center, 122);
   halo.addColorStop(0, `rgba(${Math.round(c2.r * 255)}, ${Math.round(c2.g * 255)}, ${Math.round(c2.b * 255)}, 0.95)`);
-  halo.addColorStop(0.5, `rgba(${Math.round(c1.r * 255)}, ${Math.round(c1.g * 255)}, ${Math.round(c1.b * 255)}, 0.46)`);
+  halo.addColorStop(0.5, `rgba(${Math.round(c1.r * 255)}, ${Math.round(c1.g * 255)}, ${Math.round(c1.b * 255)}, 0.52)`);
   halo.addColorStop(1, "rgba(255,255,255,0)");
   ctx.fillStyle = halo;
   ctx.fillRect(0, 0, 256, 256);
+
+  if (monster.rarity === "epic" || monster.rarity === "legendary" || monster.rarity === "special") {
+    ctx.strokeStyle = `rgba(${Math.round(rarityTone.r * 255)}, ${Math.round(rarityTone.g * 255)}, ${Math.round(rarityTone.b * 255)}, 0.9)`;
+    ctx.lineWidth = monster.rarity === "special" ? 10 : 8;
+    ctx.beginPath();
+    ctx.arc(center, center, 92, 0, Math.PI * 2);
+    ctx.stroke();
+  }
 
   ctx.strokeStyle = "rgba(255,255,255,0.96)";
   ctx.lineWidth = 9;
@@ -1182,6 +1315,11 @@ function createMonsterSpriteTexture(monsterId) {
   ctx.fill();
 
   drawMonsterSymbol(ctx, visual.symbol, center);
+
+  ctx.fillStyle = "rgba(255,255,255,0.88)";
+  ctx.font = "700 18px Nunito";
+  ctx.textAlign = "center";
+  ctx.fillText(visual.badge.toUpperCase(), center, 220);
 
   const tex = new THREE.CanvasTexture(canvas2d);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -1491,6 +1629,8 @@ function spawnEnemy(type) {
     slowTimer: 0,
     slowFactor: 1,
     stunTimer: 0,
+    burnTimer: 0,
+    burnDps: 0,
     abilityCd: 3 + Math.random() * 2,
     attackCd: 0.25,
     isBoss: !!enemyType.isBoss
@@ -1546,6 +1686,15 @@ function getNextLiveBarrier(enemyProgress) {
 function updateEnemies(dt) {
   for (let i = enemies.length - 1; i >= 0; i -= 1) {
     const enemy = enemies[i];
+
+    if (enemy.burnTimer > 0) {
+      enemy.burnTimer -= dt;
+      enemy.hp -= enemy.burnDps * dt;
+      if (enemy.hp <= 0) {
+        removeEnemy(i, true);
+        continue;
+      }
+    }
 
     if (enemy.stunTimer > 0) {
       enemy.stunTimer -= dt;
@@ -1688,6 +1837,9 @@ function updateHeroes(dt, elapsed) {
       const pulse = 1 + Math.sin(elapsed * 3.2 + hero.animSeed) * 0.08;
       const iconScale = visuals.iconScale || 2.45;
       visuals.iconSprite.scale.set(iconScale * pulse, iconScale * pulse, 1);
+      if (visuals.rareAura) visuals.rareAura.rotation.z += dt * 1.25;
+      if (visuals.orbitGroup) visuals.orbitGroup.rotation.y += dt * 2;
+      if (visuals.orbitGroup2) visuals.orbitGroup2.rotation.y -= dt * 2.7;
     }
 
     if (hero.disabledTimer > 0) {
@@ -1699,22 +1851,19 @@ function updateHeroes(dt, elapsed) {
     hero.cooldown -= dt;
 
     const monster = monsterCatalog[hero.monsterId];
+    const stats = getHeroStats(hero);
     if (monster.special && hero.specialCd > 0) {
       hero.specialCd -= dt;
     }
 
-    if (monster.special === "global_stun" && hero.specialCd <= 0 && enemies.length) {
-      hero.specialCd = monster.specialCooldown;
-      for (const enemy of enemies) {
-        enemy.stunTimer = Math.max(enemy.stunTimer, 1.4);
+    if (monster.special && hero.specialCd <= 0 && enemies.length) {
+      if (triggerHeroSpecial(hero, monster, stats)) {
+        hero.specialCd = monster.specialCooldown || 9;
       }
-      spawnPulse(hero.mesh.position, 0xad91ff, 0.7);
-      log("slime king stunned the enemy wave.");
     }
 
     if (hero.cooldown > 0) continue;
 
-    const stats = getHeroStats(hero);
     const target = getTargetInRange(hero, stats.range);
     if (!target) {
       hero.cooldown = 0.08;
@@ -1726,16 +1875,117 @@ function updateHeroes(dt, elapsed) {
   }
 }
 
+function triggerHeroSpecial(hero, monster, stats) {
+  if (monster.special === "global_stun") {
+    for (const enemy of enemies) {
+      enemy.stunTimer = Math.max(enemy.stunTimer, 1.8);
+      applyDamage(enemy, stats.damage * 0.9);
+    }
+    spawnPulse(hero.mesh.position, 0xad91ff, 0.7);
+    log("slime king cast royal decree.");
+    return true;
+  }
+
+  if (monster.special === "divine_smite") {
+    const target = enemies.reduce((best, enemy) => (!best || enemy.maxHp > best.maxHp ? enemy : best), null);
+    if (!target) return false;
+    applyDamage(target, stats.damage * 4.2);
+    damageArea(target.mesh.position, 2.8, stats.damage * 1.8);
+    spawnPulse(target.mesh.position, 0xffe074, 0.66);
+    log("mighty cast divine smite.");
+    return true;
+  }
+
+  if (monster.special === "time_warp") {
+    state.globalSlowTimer = Math.max(state.globalSlowTimer, 3);
+    for (const ally of heroes) {
+      ally.cooldown *= 0.5;
+    }
+    spawnPulse(hero.mesh.position, 0x89e4ff, 0.66);
+    log("speedy cast time warp.");
+    return true;
+  }
+
+  if (monster.special === "meteor_rain") {
+    const targets = [...enemies].sort((a, b) => b.progress - a.progress).slice(0, 4);
+    if (!targets.length) return false;
+    for (const t of targets) {
+      damageArea(t.mesh.position, 3.1, stats.damage * 2.25);
+      t.stunTimer = Math.max(t.stunTimer, 0.5);
+      spawnFloorMark(t.mesh.position, 0xff8c5f, 2.2, 0.62);
+    }
+    log("felina called meteor rain.");
+    return true;
+  }
+
+  if (monster.special === "dragon_fury") {
+    const targets = [...enemies]
+      .sort((a, b) => b.progress - a.progress)
+      .slice(0, 3);
+    if (!targets.length) return false;
+    for (const t of targets) {
+      applyDamage(t, stats.damage * 3.1);
+      if (t.hp > 0 && t.hp / t.maxHp <= stats.executeThreshold) {
+        applyDamage(t, t.maxHp * 0.55);
+      }
+      spawnPulse(t.mesh.position, 0xffcd69, 0.5);
+    }
+    log("kevin unleashed dragon fury.");
+    return true;
+  }
+
+  if (monster.special === "broadside") {
+    const targets = [...enemies]
+      .sort((a, b) => b.progress - a.progress)
+      .slice(0, 5);
+    if (!targets.length) return false;
+    for (const t of targets) {
+      damageArea(t.mesh.position, 2.3, stats.damage * 1.5);
+    }
+    state.gold += 22;
+    spawnPulse(hero.mesh.position, 0xff8de9, 0.65);
+    log("pirate cat fired broadside (+22 gold).");
+    return true;
+  }
+
+  if (monster.special === "inferno_aura") {
+    const origin = hero.mesh.position;
+    let hitAny = false;
+    for (const enemy of enemies) {
+      if (enemy.mesh.position.distanceToSquared(origin) > 4.6 * 4.6) continue;
+      applyDamage(enemy, stats.damage * 1.2);
+      enemy.burnTimer = Math.max(enemy.burnTimer, 2.8);
+      enemy.burnDps = Math.max(enemy.burnDps, stats.burnDps);
+      hitAny = true;
+    }
+    if (hitAny) {
+      spawnPulse(origin, 0xff7f5a, 0.6);
+      log("hellhound ignited inferno aura.");
+    }
+    return hitAny;
+  }
+
+  return false;
+}
+
 function getHeroStats(hero) {
   const monster = monsterCatalog[hero.monsterId];
   const entry = collection[hero.monsterId];
 
+  const rarityScale = {
+    common: 1,
+    rare: 1.26,
+    epic: 1.85,
+    legendary: 2.75,
+    special: 3.15
+  }[monster.rarity] || 1;
+
   const starMult = 1 + (entry.stars - 1) * 0.55;
   const levelMult = 1 + (entry.level - 1) * 0.2;
 
-  let damage = monster.baseDamage * starMult * levelMult;
-  let fireRate = monster.fireRate * (1 + (entry.level - 1) * 0.03);
-  const range = monster.range + (entry.level - 1) * 0.08;
+  let damage = monster.baseDamage * rarityScale * starMult * levelMult;
+  let fireRate = monster.fireRate * (1 + (entry.level - 1) * 0.035) * Math.sqrt(rarityScale);
+  const range = monster.range + (entry.level - 1) * 0.1 + (rarityScale - 1) * 0.22;
 
   const buffs = getAdjacencyBuffs(hero.slotIndex);
   damage *= 1 + buffs.damage;
@@ -1751,6 +2001,11 @@ function getHeroStats(hero) {
     stunChance: monster.stunChance || 0,
     stunDuration: monster.stunDuration || 0,
     tripleHit: monster.tripleHit || false,
+    chainJumps: monster.chainJumps || 0,
+    chainFalloff: monster.chainFalloff || 0.72,
+    executeThreshold: monster.executeThreshold || 0,
+    burnDps: monster.burnDps || 0,
+    goldStealChance: monster.goldStealChance || 0,
     projectileColor: monster.projectileColor
   };
 }
@@ -1777,8 +2032,8 @@ function getAdjacencyBuffs(slotIndex) {
   }
 
   return {
-    damage: Math.min(1.8, damage),
-    speed: Math.min(1.6, speed)
+    damage: Math.min(2.6, damage),
+    speed: Math.min(2.2, speed)
   };
 }
 
@@ -1800,6 +2055,7 @@ function getTargetInRange(hero, range) {
 }
 
 function fireHero(hero, target, stats) {
+  const monster = monsterCatalog[hero.monsterId];
   const origin = hero.mesh.position.clone();
   origin.y += 2.4;
 
@@ -1808,15 +2064,14 @@ function fireHero(hero, target, stats) {
     applyDamage(target, stats.damage * 0.62);
     applyDamage(target, stats.damage * 0.86);
     spawnProjectile(origin, target.mesh.position, stats.projectileColor);
-    return;
-  }
-
-  if (stats.splash > 0) {
-    damageArea(target.mesh.position, stats.splash, stats.damage);
-    spawnProjectile(origin, target.mesh.position, stats.projectileColor);
   } else {
-    applyDamage(target, stats.damage);
-    spawnProjectile(origin, target.mesh.position, stats.projectileColor);
+    if (stats.splash > 0) {
+      damageArea(target.mesh.position, stats.splash, stats.damage);
+      spawnProjectile(origin, target.mesh.position, stats.projectileColor);
+    } else {
+      applyDamage(target, stats.damage);
+      spawnProjectile(origin, target.mesh.position, stats.projectileColor);
+    }
   }
 
   if (stats.slow > 0) {
@@ -1826,6 +2081,62 @@ function fireHero(hero, target, stats) {
 
   if (stats.stunChance > 0 && Math.random() < stats.stunChance) {
     target.stunTimer = Math.max(target.stunTimer, stats.stunDuration);
+  }
+
+  if (stats.chainJumps > 0) {
+    applyChainLightning(target, stats.chainJumps, 3.6, stats.damage * 0.75, stats.chainFalloff, stats);
+  }
+
+  if (stats.executeThreshold > 0 && target.hp > 0 && target.hp / target.maxHp <= stats.executeThreshold) {
+    applyDamage(target, target.maxHp * 0.5);
+    spawnPulse(target.mesh.position, 0xffd777, 0.4);
+  }
+
+  if (stats.burnDps > 0) {
+    target.burnTimer = Math.max(target.burnTimer, 2.6);
+    target.burnDps = Math.max(target.burnDps, stats.burnDps);
+  }
+
+  if (stats.goldStealChance > 0 && Math.random() < stats.goldStealChance) {
+    const bonus = 6 + Math.floor(Math.random() * 7);
+    state.gold += bonus;
+    spawnPulse(hero.mesh.position, 0xff9bf0, 0.45);
+  }
+
+  if (monster.name === "mighty" && Math.random() < 0.25) {
+    damageArea(target.mesh.position, 2.2, stats.damage * 1.35);
+    spawnPulse(target.mesh.position, 0xffe993, 0.45);
+  }
+}
+
+function applyChainLightning(initialTarget, jumps, jumpRange, baseDamage, falloff, stats) {
+  const hit = new Set([initialTarget.id]);
+  let current = initialTarget;
+  let damage = baseDamage;
+
+  for (let i = 0; i < jumps; i += 1) {
+    let next = null;
+    let bestDist = Infinity;
+    for (const enemy of enemies) {
+      if (hit.has(enemy.id)) continue;
+      const distSq = enemy.mesh.position.distanceToSquared(current.mesh.position);
+      if (distSq > jumpRange * jumpRange) continue;
+      if (distSq < bestDist) {
+        bestDist = distSq;
+        next = enemy;
+      }
+    }
+    if (!next) break;
+
+    applyDamage(next, damage);
+    if (stats.slow > 0) {
+      next.slowFactor = Math.min(next.slowFactor, stats.slow);
+      next.slowTimer = Math.max(next.slowTimer, stats.slowDuration);
+    }
+    spawnPulse(next.mesh.position, 0xb8f5ff, 0.36);
+    hit.add(next.id);
+    current = next;
+    damage *= falloff;
   }
 }
 
